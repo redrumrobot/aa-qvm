@@ -806,6 +806,12 @@ void Cmd_Team_f( gentity_t *ent )
       g_maxGameClients.integer ) );
     return;
   }
+  else if ( ent->client->pers.specExpires > level.time )
+  {
+    trap_SendServerCommand( ent-g_entities, va( "print \"You can't join a team yet. Expires in %d seconds.\n\"",
+      ( ent->client->pers.specExpires - level.time ) / 1000 ) );
+    return;
+  }
   else if( !Q_stricmpn( s, "alien", 5 ) )
   {
     if( g_forceAutoSelect.integer && !G_admin_permission(ent, ADMF_FORCETEAMCHANGE) )
@@ -1518,6 +1524,7 @@ void Cmd_CallVote_f( gentity_t *ent )
 
   // detect clientNum for partial name match votes
   if( !Q_stricmp( arg1, "kick" ) ||
+    !Q_stricmp( arg1, "spec" ) ||
     !Q_stricmp( arg1, "mute" ) ||
     !Q_stricmp( arg1, "unmute" ) )
   {
@@ -1610,6 +1617,20 @@ void Cmd_CallVote_f( gentity_t *ent )
       Q_strcat( level.voteString, sizeof( level.voteDisplayString ), va( "(%s^7)", reason ) );
     Com_sprintf( level.voteDisplayString, sizeof( level.voteDisplayString ),
       "Kick player \'%s^7\'", name );
+  }
+  else if( !Q_stricmp( arg1, "spec" ) )
+  {
+    if( G_admin_permission( &g_entities[ clientNum ], ADMF_IMMUNITY ) )
+    {
+      trap_SendServerCommand( ent-g_entities,
+        "print \"callvote: admin is immune from vote spec\n\"" );
+      return;
+    }
+
+    Com_sprintf( level.voteString, sizeof( level.voteString ),
+      "!putteam %i s %d", clientNum, g_adminTempSpec.integer + 1 );
+    Com_sprintf( level.voteDisplayString, sizeof( level.voteDisplayString ),
+      "Spec player \'%s\'", name );
   }
   else if( !Q_stricmp( arg1, "mute" ) )
   {
@@ -1778,11 +1799,41 @@ void Cmd_CallVote_f( gentity_t *ent )
 
      }
    }
+  else if( !Q_stricmp( arg1, "extend" ) )
+  {
+    if( !g_extendVotesPercent.integer )
+    {
+      trap_SendServerCommand( ent-g_entities, "print \"Extend votes have been disabled\n\"" );
+      return;
+    }
+    if( g_extendVotesCount.integer
+      && level.extend_vote_count >= g_extendVotesCount.integer )
+    {
+      trap_SendServerCommand( ent-g_entities,
+        va( "print \"callvote: Maximum number of %d extend votes has been reached\n\"",
+        g_extendVotesCount.integer ) );
+      return;
+    }
+    if( level.time - level.startTime <
+      ( g_timelimit.integer - g_extendVotesTime.integer / 2 ) * 60000 )
+    {
+      trap_SendServerCommand( ent-g_entities,
+        va( "print \"callvote: Extend votes only allowed with less than %d minutes remaining\n\"",
+        g_extendVotesTime.integer / 2 ) );
+      return;
+    }
+    level.extend_vote_count++;
+    level.votePassThreshold = g_extendVotesPercent.integer;	   
+    Com_sprintf( level.voteString, sizeof( level.voteString ),
+      "timelimit %i", g_timelimit.integer + g_extendVotesTime.integer );
+    Com_sprintf( level.voteDisplayString, sizeof( level.voteDisplayString ),
+      "Extend the timelimit by %d minutes", g_extendVotesTime.integer );
+  }
   else
   {
     trap_SendServerCommand( ent-g_entities, "print \"Invalid vote string\n\"" );
     trap_SendServerCommand( ent-g_entities, "print \"Valid vote commands are: "
-      "map, map_restart, draw, nextmap, kick, mute, unmute, poll, and sudden_death\n" );
+      "map, map_restart, draw, extend, nextmap, kick, mute, unmute, poll, and sudden_death\n" );
     return;
   }
   
@@ -2208,7 +2259,7 @@ void Cmd_CallTeamVote_f( gentity_t *ent )
     trap_SendServerCommand( ent-g_entities, "print \"Invalid vote string\n\"" );
     trap_SendServerCommand( ent-g_entities,
        "print \"Valid team vote commands are: "
-       "kick, denybuild, allowbuild, poll, designate, undesignate, and admitdefeat\n\"" );
+       "admitdefeat, allowbuild, denybuild, designate, kick, poll, and undesignate\n\"" );
     return;
   }
   ent->client->pers.voteCount++;
