@@ -1266,6 +1266,30 @@ void G_CalculateBuildPoints( void )
             }
           }
         }
+
+        // Prevent mark bug during Sudden Death.
+        for( i = 1, ent = g_entities + i; i < level.num_entities; i++, ent++ )
+        {
+          // Skip non-buildables
+          if( ent->s.eType != ET_BUILDABLE )
+            continue;
+
+          // Skip unmarked buildables
+          if( ent->deconstruct != qtrue )
+            continue;
+
+          // Unmark buildables that cannot be rebuilt
+          if( ent->health > 0 &&
+              ( ( g_suddenDeathMode.integer == SDMODE_SELECTIVE &&
+                  !BG_FindReplaceableTestForBuildable( ent->s.modelindex ) ) ||
+                ( g_suddenDeathMode.integer == SDMODE_BP &&
+                  BG_FindBuildPointsForBuildable( ent->s.modelindex ) ) ||
+                ( g_suddenDeathMode.integer == SDMODE_NO_BUILD ) ) )
+          {
+            ent->deconstruct = qfalse;
+          }
+        }
+
         level.suddenDeathHBuildPoints = localHTP;
         level.suddenDeathABuildPoints = localATP;
         level.suddenDeathBeginTime = level.time;
