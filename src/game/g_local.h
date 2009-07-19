@@ -410,6 +410,7 @@ typedef struct
   char                guid[ 33 ];
   char                ip[ 16 ];
   qboolean            muted;
+  int                 muteExpires;           // level.time at which a player is unmuted
   qboolean            denyBuild;
   int                 adminLevel;
   char                adminName[ MAX_NETNAME ];
@@ -823,6 +824,7 @@ void      Cmd_TeamVote_f( gentity_t *ent );
 void      Cmd_Builder_f( gentity_t *ent );
 void      G_WordWrap( char *buffer, int maxwidth );
 void      G_CP( gentity_t *ent );
+qboolean  G_IsMuted( gclient_t *ent );
 
 //
 // g_physics.c
@@ -1343,6 +1345,7 @@ extern  vmCvar_t  g_adminLog;
 extern  vmCvar_t  g_adminParseSay;
 extern  vmCvar_t  g_adminSayFilter;
 extern  vmCvar_t  g_adminNameProtect;
+extern  vmCvar_t  g_adminTempMute;
 extern  vmCvar_t  g_adminTempBan;
 extern  vmCvar_t  g_adminTempSpec;
 extern  vmCvar_t  g_adminMaxBan;
