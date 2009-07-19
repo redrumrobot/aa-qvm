@@ -2429,6 +2429,7 @@ void Cmd_Class_f( gentity_t *ent )
   vec3_t    mins, maxs;
   int       num;
   gentity_t *other;
+  qboolean  humanNear = qfalse;
 
 
   clientNum = ent->client - level.clients;
@@ -2531,11 +2532,9 @@ void Cmd_Class_f( gentity_t *ent )
     //if we are not currently spectating, we are attempting evolution
     if( ent->client->pers.classSelection != PCL_NONE )
     {
-      if( ( ent->client->ps.stats[ STAT_STATE ] & SS_WALLCLIMBING ) ||
-          ( ent->client->ps.stats[ STAT_STATE ] & SS_WALLCLIMBINGCEILING ) )
+      if( !level.overmindPresent )
       {
-        trap_SendServerCommand( ent-g_entities,
-          "print \"You cannot evolve while wallwalking\n\"" );
+        G_TriggerMenu( clientNum, MN_A_NOOVMND_EVOLVE );
         return;
       }
 
@@ -2551,16 +2550,29 @@ void Cmd_Class_f( gentity_t *ent )
         if( ( other->client && other->client->ps.stats[ STAT_PTEAM ] == PTE_HUMANS ) ||
             ( other->s.eType == ET_BUILDABLE && other->biteam == BIT_HUMANS ) )
         {
-          G_TriggerMenu( clientNum, MN_A_TOOCLOSE );
-          return;
+          humanNear = qtrue;
+        }
+        //If its the OM, then ignore all humans.
+        if(other->s.eType == ET_BUILDABLE && other->s.modelindex == BA_A_OVERMIND)
+        {
+          humanNear = qfalse;
+          break;
         }
       }
-
-      if( !level.overmindPresent )
+      
+      if(humanNear == qtrue)
       {
-        G_TriggerMenu( clientNum, MN_A_NOOVMND_EVOLVE );
+        G_TriggerMenu( clientNum, MN_A_TOOCLOSE );
         return;
       }
+      
+      if( ( ent->client->ps.stats[ STAT_STATE ] & SS_WALLCLIMBING ) ||
+          ( ent->client->ps.stats[ STAT_STATE ] & SS_WALLCLIMBINGCEILING ) )
+      {
+        trap_SendServerCommand( ent-g_entities, va( "print \"You cannot evolve while wallwalking\n\"" ) );
+        return;
+      }
+
 
       //guard against selling the HBUILD weapons exploit
        if( ent->client->sess.sessionTeam != TEAM_SPECTATOR &&
