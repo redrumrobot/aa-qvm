@@ -1569,7 +1569,12 @@ void ClientThink_real( gentity_t *ent )
 
     //switch jetpack off if no reactor
     if( !level.reactorPresent )
+    {
       BG_DeactivateUpgrade( UP_JETPACK, client->ps.stats );
+
+      trap_SendServerCommand( ent - g_entities,
+        "print \"Your jet pack has no power source.\n\"" );
+    }
   }
 
   // set up for pmove
