@@ -1580,7 +1580,7 @@ void Cmd_CallVote_f( gentity_t *ent )
     if( reason[ 0 ] != '\0' )
       Com_sprintf(reasonprint, sizeof(reasonprint), "With reason: %s", reason);
 
-        Com_sprintf( message, sizeof( message ), "%s^7 attempted /callvote %s %s on immune admin %s^7 %s^7",
+        Com_sprintf( message, sizeof( message ), "%s^7 attempted /callvote %s^7 %s^7 on immune admin %s^7 %s^7",
           ent->client->pers.netname, arg1, targetname, g_entities[ clientNum ].client->pers.netname, reasonprint );
       }
     }
@@ -1609,7 +1609,7 @@ void Cmd_CallVote_f( gentity_t *ent )
     if ( reason[0]!='\0' )
       Q_strcat( level.voteString, sizeof( level.voteDisplayString ), va( "(%s^7)", reason ) );
     Com_sprintf( level.voteDisplayString, sizeof( level.voteDisplayString ),
-      "Kick player \'%s\'", name );
+      "Kick player \'%s^7\'", name );
   }
   else if( !Q_stricmp( arg1, "mute" ) )
   {
@@ -1630,7 +1630,7 @@ void Cmd_CallVote_f( gentity_t *ent )
     Com_sprintf( level.voteString, sizeof( level.voteString ),
       "!mute %i", clientNum );
     Com_sprintf( level.voteDisplayString, sizeof( level.voteDisplayString ),
-      "Mute player \'%s\'", name );
+      "Mute player \'%s^7\'", name );
   }
   else if( !Q_stricmp( arg1, "unmute" ) )
   {
@@ -1643,7 +1643,7 @@ void Cmd_CallVote_f( gentity_t *ent )
     Com_sprintf( level.voteString, sizeof( level.voteString ),
       "!unmute %i", clientNum );
     Com_sprintf( level.voteDisplayString, sizeof( level.voteDisplayString ),
-      "Un-Mute player \'%s\'", name );
+      "Un-Mute player \'%s^7\'", name );
   }
   else if( !Q_stricmp( arg1, "map_restart" ) )
   {
@@ -1678,7 +1678,7 @@ void Cmd_CallVote_f( gentity_t *ent )
     if( !G_MapExists( arg2 ) )
     {
       trap_SendServerCommand( ent - g_entities, va( "print \"callvote: "
-        "'maps/%s.bsp' could not be found on the server\n\"", arg2 ) );
+        "'maps/%s^7.bsp' could not be found on the server\n\"", arg2 ) );
       return;
     }
 
@@ -1691,7 +1691,7 @@ void Cmd_CallVote_f( gentity_t *ent )
 
     Com_sprintf( level.voteString, sizeof( level.voteString ), "%s %s", arg1, arg2 );
     Com_sprintf( level.voteDisplayString,
-        sizeof( level.voteDisplayString ), "Change to map '%s'", arg2 );
+        sizeof( level.voteDisplayString ), "Change to map '%s^7'", arg2 );
     level.votePassThreshold = g_mapVotesPercent.integer;
   }
   else if( !Q_stricmp( arg1, "nextmap" ) )
@@ -1720,7 +1720,7 @@ void Cmd_CallVote_f( gentity_t *ent )
     if( !G_admin_permission( ent, ADMF_NO_VOTE_LIMIT ) && !map_is_votable( arg2 ) )
     {
       trap_SendServerCommand( ent - g_entities, va( "print \"callvote: "
-        "Only admins may call a vote for map: %s\n\"", arg2 ) );
+        "Only admins may call a vote for map: %s^7\n\"", arg2 ) );
       return;
     }
 
@@ -1746,7 +1746,7 @@ void Cmd_CallVote_f( gentity_t *ent )
       }
       Com_sprintf( level.voteString, sizeof( level.voteString ), nullstring);
       Com_sprintf( level.voteDisplayString,
-          sizeof( level.voteDisplayString ), "[Poll] \'%s\'", arg2plus );
+          sizeof( level.voteDisplayString ), "[Poll] \'%s^7\'", arg2plus );
    }
    else if( !Q_stricmp( arg1, "sudden_death" ) ||
      !Q_stricmp( arg1, "suddendeath" ) )
@@ -2064,7 +2064,7 @@ void Cmd_CallTeamVote_f( gentity_t *ent )
        if( reason[ 0 ] != '\0' )
         Com_sprintf(reasonprint, sizeof(reasonprint), "With reason: %s", reason);
 
-        Com_sprintf( message, sizeof( message ), "%s^7 attempted /callteamvote %s %s on immune admin %s^7 %s^7",
+        Com_sprintf( message, sizeof( message ), "%s^7 attempted /callteamvote %s^7 %s^7 on immune admin %s^7 %s^7",
           ent->client->pers.netname, arg1, arg2, g_entities[ clientNum ].client->pers.netname, reasonprint );
       }
     }
@@ -2094,7 +2094,7 @@ void Cmd_CallTeamVote_f( gentity_t *ent )
       g_adminTempBan.string );
     Com_sprintf( level.teamVoteDisplayString[ cs_offset ],
         sizeof( level.teamVoteDisplayString[ cs_offset ] ),
-        "Kick player '%s'", name );
+        "Kick player '%s^7'", name );
   }
   else if( !Q_stricmp( arg1, "denybuild" ) )
   {
@@ -2117,7 +2117,7 @@ void Cmd_CallTeamVote_f( gentity_t *ent )
       sizeof( level.teamVoteString[ cs_offset ] ), "!denybuild %i", clientNum );
     Com_sprintf( level.teamVoteDisplayString[ cs_offset ],
         sizeof( level.teamVoteDisplayString[ cs_offset ] ),
-        "Take away building rights from '%s'", name );
+        "Take away building rights from '%s^7'", name );
   }
   else if( !Q_stricmp( arg1, "allowbuild" ) )
   {
@@ -2132,7 +2132,7 @@ void Cmd_CallTeamVote_f( gentity_t *ent )
       sizeof( level.teamVoteString[ cs_offset ] ), "!allowbuild %i", clientNum );
     Com_sprintf( level.teamVoteDisplayString[ cs_offset ],
         sizeof( level.teamVoteDisplayString[ cs_offset ] ),
-        "Allow '%s' to build", name );
+        "Allow '%s^7' to build", name );
   }
   else if( !Q_stricmp( arg1, "designate" ) )
   {
@@ -2153,7 +2153,7 @@ void Cmd_CallTeamVote_f( gentity_t *ent )
       sizeof( level.teamVoteString[ cs_offset ] ), "!designate %i", clientNum );
     Com_sprintf( level.teamVoteDisplayString[ cs_offset ],
         sizeof( level.teamVoteDisplayString[ cs_offset ] ),
-        "Make '%s' a designated builder", name );
+        "Make '%s^7' a designated builder", name );
   }
   else if( !Q_stricmp( arg1, "undesignate" ) )
   {
@@ -2175,7 +2175,7 @@ void Cmd_CallTeamVote_f( gentity_t *ent )
       sizeof( level.teamVoteString[ cs_offset ] ), "!undesignate %i", clientNum );
     Com_sprintf( level.teamVoteDisplayString[ cs_offset ],
         sizeof( level.teamVoteDisplayString[ cs_offset ] ),
-        "Remove designated builder status from '%s'", name );
+        "Remove designated builder status from '%s^7'", name );
   }
   else if( !Q_stricmp( arg1, "admitdefeat" ) )
   {
@@ -2201,7 +2201,7 @@ void Cmd_CallTeamVote_f( gentity_t *ent )
      }
      Com_sprintf( level.teamVoteString[ cs_offset ], sizeof( level.teamVoteString[ cs_offset ] ), nullstring );
      Com_sprintf( level.teamVoteDisplayString[ cs_offset ],
-         sizeof( level.voteDisplayString ), "[Poll] \'%s\'", arg2plus );
+         sizeof( level.voteDisplayString ), "[Poll] \'%s^7\'", arg2plus );
    }
   else
   {
@@ -2214,7 +2214,7 @@ void Cmd_CallTeamVote_f( gentity_t *ent )
   ent->client->pers.voteCount++;
   
   if ( reason[0]!='\0' )
-    Q_strcat( level.teamVoteDisplayString[ cs_offset ], sizeof( level.teamVoteDisplayString[ cs_offset ] ), va( " Reason: '%s'^7", reason ) );
+    Q_strcat( level.teamVoteDisplayString[ cs_offset ], sizeof( level.teamVoteDisplayString[ cs_offset ] ), va( " Reason: '%s^7'", reason ) );
 
   for( i = 0 ; i < level.maxclients ; i++ )
   {
