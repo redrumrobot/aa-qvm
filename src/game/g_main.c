@@ -821,6 +821,9 @@ void G_ShutdownGame( int restart )
     trap_FS_FCloseFile( level.logFile );
   }
 
+  // write admin.dat for !seen data
+  admin_writeconfig();
+
   // write all the client session data so we can get it back
   G_WriteSessionData( );
 
