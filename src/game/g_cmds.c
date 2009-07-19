@@ -1563,7 +1563,7 @@ void Cmd_CallVote_f( gentity_t *ent )
     }
     
     if( clientNum != -1 &&
-      level.clients[ clientNum ].pers.connected == CON_DISCONNECTED )
+      level.clients[ clientNum ].pers.connected != CON_CONNECTED )
     {
       clientNum = -1;
     }
