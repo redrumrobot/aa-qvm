@@ -1951,8 +1951,8 @@ qboolean G_admin_kick( gentity_t *ent, int skiparg )
     admin_writeconfig();
 
  trap_SendServerCommand( pids[ 0 ],
-  va( "disconnect \"You have been kicked.\n%s^7\nreason:\n%s\n%s\"",
-    ( ent ) ? va( "admin:\n%s", G_admin_adminPrintName( ent ) ) : "admin\nconsole",
+  va( "disconnect \"You have been kicked.\n%s^7\nReason: %s\n%s\"",
+    ( ent ) ? va( "Admin: %s", G_admin_adminPrintName( ent ) ) : "admin\nconsole",
     ( *reason ) ? reason : "kicked by admin", notice ) );
   
   trap_DropClient( pids[ 0 ], va( "kicked%s^7, reason: %s",
@@ -2158,7 +2158,7 @@ qboolean G_admin_ban( gentity_t *ent, int skiparg )
   
   trap_SendServerCommand( g_admin_namelog[ logmatch ]->slot,
     va( "disconnect \"You have been banned.\n"
-      "admin:\n%s^7\nduration:\n%s\nreason:\n%s\n%s\"",
+      "Admin: %s^7\nDuration: %s\nReason: %s\n%s\"",
       ( ent ) ? G_admin_adminPrintName( ent ) : "console",
       duration,
       ( *reason ) ? reason : "banned by admin", notice ) );
