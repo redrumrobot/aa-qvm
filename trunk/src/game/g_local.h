@@ -1344,7 +1344,7 @@ extern  vmCvar_t  g_forceAutoSelect;
 extern  vmCvar_t  g_minLevelToSpecMM1;
 extern  vmCvar_t  g_banNotice;
 
-extern  vmCvar_t  g_devmapKillerHP;
+extern  vmCvar_t  g_killerHp;
 
 extern  vmCvar_t  g_privateMessages;
 extern  vmCvar_t  g_decolourLogfiles;

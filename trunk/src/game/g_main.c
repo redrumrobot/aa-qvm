@@ -164,7 +164,7 @@ vmCvar_t  g_myStats;
 vmCvar_t  g_antiSpawnBlock;
 vmCvar_t  g_banNotice;
 
-vmCvar_t  g_devmapKillerHP;
+vmCvar_t  g_killerHp;
 
 vmCvar_t  g_buildLogMaxLength;
 
@@ -338,7 +338,7 @@ static cvarTable_t   gameCvarTable[ ] =
   { &g_minLevelToSpecMM1, "g_minLevelToSpecMM1", "0", CVAR_ARCHIVE, 0, qfalse  },
   { &g_antiSpawnBlock, "g_antiSpawnBlock", "0", CVAR_ARCHIVE, 0, qfalse  },
   
-  { &g_devmapKillerHP, "g_devmapKillerHP", "0", CVAR_ARCHIVE, 0, qtrue  },
+  { &g_killerHp, "g_killerHp", "0", CVAR_ARCHIVE, 0, qtrue  },
   
   { &g_tag, "g_tag", "main", CVAR_INIT, 0, qfalse },
   
