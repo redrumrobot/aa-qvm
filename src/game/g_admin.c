@@ -3332,11 +3332,32 @@ qboolean G_admin_listmaps( gentity_t *ent, int skiparg )
   return qtrue;
 }
 
+int G_listrotation_mapstatus( int i, int j, char *mapName )
+{
+  int statusColor;
+
+  if ( !G_MapExists( mapName ) && Q_stricmp( "*VOTE*", mapName ) )
+  {
+    statusColor = 1;
+  }
+  else if ( G_GetCurrentMap( i ) == j )
+  {
+    statusColor = 3;
+  }
+  else
+  {
+    statusColor = 7;
+  }
+
+  return statusColor;
+}
+
 qboolean G_admin_listrotation( gentity_t *ent, int skiparg )
 {
-  int i, j, statusColor;
+  int i, j, k, statusColor;
+  char currentMap, nextMap;
   char *status = '\0';
-
+  qboolean rotationFound = qfalse;
   extern mapRotations_t mapRotations;
 
   // Check for an active map rotation
@@ -3357,43 +3378,45 @@ qboolean G_admin_listrotation( gentity_t *ent, int skiparg )
 
       for( j = 0; j < mapRotations.rotations[ i ].numMaps; j++ )
       {
-        if ( G_GetCurrentMap( i ) == j )
+        statusColor = G_listrotation_mapstatus( i, j, mapRotations.rotations[ i ].maps[ j ].name );
+
+        if ( j == ( g_currentMap.integer + 1 ) && G_MapExists( g_nextMap.string ) )
         {
-          statusColor = 3;
-          status = "current slot";
+          ADMBP( va( "^5%3i %s\n", j + 1, g_nextMap.string ) );
         }
-        else if ( !G_MapExists( mapRotations.rotations[ i ].maps[ j ].name ) )
+        else if ( !Q_stricmp( "*VOTE*", mapRotations.rotations[ i ].maps[ j ].name ) )
         {
-          statusColor = 1;
-          status = "missing";
+          ADMBP( va( "^%i%3i Vote:", statusColor, j + 1 ) );
+
+          for( k = 0; k < mapRotations.rotations[ i ].maps[ j ].numConditions; k++ )
+          {
+            statusColor = G_listrotation_mapstatus( i, j, mapRotations.rotations[ i ].maps[ j ].conditions[ k ].dest );
+            ADMBP( va( " ^%i%s", statusColor, mapRotations.rotations[ i ].maps[ j ].conditions[ k ].dest ) );
+          }
+
+          ADMBP( "\n" );
         }
         else
         {
-          statusColor = 7;
-          status = "";
+          ADMBP( va( "^%i%3i %s\n", statusColor, j + 1, mapRotations.rotations[ i ].maps[ j ].name ) );
         }
-        ADMBP( va( "^%i%3i %-20s ^%i%s\n", statusColor, j + 1, mapRotations.rotations[ i ].maps[ j ].name, statusColor, status ) );
       }
-
-      ADMBP_end();
 
       // No maps were found in the active map rotation
       if ( mapRotations.rotations[ i ].numMaps < 1 )
       {
-        trap_SendServerCommand( ent-g_entities, "print \"  - ^7Empty!\n\"" );
+        ADMBP( "  - Empty!\n" );
+        ADMBP_end();
         return qfalse;
       }
+
+      ADMBP( "^7Legend: ^1Missing^7, ^3Current^7, ^5Voted^7.\n" );
+      ADMBP_end();
     }
   }
 
-  if( g_nextMap.string[0] )
-  {
-    ADMP( va ("^5 Next map overriden by g_nextMap to: %s\n", g_nextMap.string ) );
-  }
-  
   return qtrue;
 }
-
 
 qboolean G_admin_showbans( gentity_t *ent, int skiparg )
 {
