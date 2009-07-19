@@ -1782,18 +1782,11 @@ void ExitLevel( void )
     }
   }
 
-Ê if ( G_MapExists( g_nextMap.string ) )
-Ê {
-Ê Ê trap_Cvar_VariableStringBuffer( "mapname", map, sizeof( map ) );
+  if ( G_MapExists( g_nextMap.string ) )
+  {
+	trap_SendConsoleCommand( EXEC_APPEND, va("map %s\n", g_nextMap.string ) );
+  }
 
-Ê Ê if( !strcmp( g_nextMap.string, map ) )
-Ê Ê Ê trap_SendConsoleCommand( EXEC_APPEND, "map_restart\n" );
-Ê Ê else
-Ê Ê Ê trap_SendConsoleCommand( EXEC_APPEND, va("map %s\n", g_nextMap.string ) );
-
-Ê Ê if( G_MapRotationActive( ) )
-Ê Ê Ê G_AdvanceMapRotation( );
-Ê }
   else if( G_MapRotationActive( ) )
     G_AdvanceMapRotation( );
   else
