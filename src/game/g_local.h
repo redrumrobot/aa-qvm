@@ -416,6 +416,7 @@ typedef struct
   qboolean            designatedBuilder;
   qboolean            firstConnect;        // This is the first map since connect
   qboolean            useUnlagged;
+  int                 lastTeamStatus;
   statsCounters_t     statscounters;
 } clientPersistant_t;
 
@@ -1367,6 +1368,9 @@ extern  vmCvar_t  g_msgTime;
 extern  vmCvar_t  g_buildLogMaxLength;
 
 extern  vmCvar_t  g_autoGhost;
+
+extern  vmCvar_t  g_teamStatus;
+extern  vmCvar_t  g_teamStatusTime;
 
 void      trap_Printf( const char *fmt );
 void      trap_Error( const char *fmt );

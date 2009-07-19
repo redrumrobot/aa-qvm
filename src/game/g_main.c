@@ -186,6 +186,9 @@ vmCvar_t  g_msgTime;
 
 vmCvar_t  g_autoGhost;
 
+vmCvar_t  g_teamStatus;
+vmCvar_t  g_teamStatusTime;
+
 static cvarTable_t   gameCvarTable[ ] =
 {
   // don't override the cheat state set by the system
@@ -240,6 +243,9 @@ static cvarTable_t   gameCvarTable[ ] =
   { &g_needpass, "g_needpass", "0", CVAR_SERVERINFO | CVAR_ROM, 0, qfalse },
   
   { &g_autoGhost, "g_autoGhost", "1", CVAR_SERVERINFO, 0, qfalse },
+
+  { &g_teamStatus, "g_teamStatus", "0", CVAR_ARCHIVE, 0, qfalse  },
+  { &g_teamStatusTime, "g_teamStatusTime", "10", CVAR_ARCHIVE, 0, qfalse  },
 
   { &g_dedicated, "dedicated", "0", 0, 0, qfalse  },
 
