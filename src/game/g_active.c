@@ -380,7 +380,7 @@ void SpectatorThink( gentity_t *ent, usercmd_t *ucmd )
 {
   pmove_t pm;
   gclient_t *client;
-  qboolean attack1, attack3;
+  qboolean attack1, attack2, attack3;
   qboolean  doPmove = qtrue;
 
   client = ent->client;
@@ -388,9 +388,11 @@ void SpectatorThink( gentity_t *ent, usercmd_t *ucmd )
   client->oldbuttons = client->buttons;
   client->buttons = ucmd->buttons;
 
-   attack1 = ( ( client->buttons & BUTTON_ATTACK ) &&
+  attack1 = ( ( client->buttons & BUTTON_ATTACK ) &&
                !( client->oldbuttons & BUTTON_ATTACK ) );
-   attack3 = ( ( client->buttons & BUTTON_USE_HOLDABLE ) &&
+  attack2 = ( ( client->buttons & BUTTON_ATTACK2 ) &&
+               !( client->oldbuttons & BUTTON_ATTACK2 ) );
+  attack3 = ( ( client->buttons & BUTTON_USE_HOLDABLE ) &&
                !( client->oldbuttons & BUTTON_USE_HOLDABLE ) );
 
   if( client->sess.spectatorState == SPECTATOR_LOCKED || client->sess.spectatorState == SPECTATOR_FOLLOW )
@@ -446,7 +448,7 @@ void SpectatorThink( gentity_t *ent, usercmd_t *ucmd )
     G_TouchTriggers( ent );
     trap_UnlinkEntity( ent );
 
-    if( ( attack1 ) && ( client->ps.pm_flags & PMF_QUEUED ) )
+    if( ( attack1 ) && ( client->ps.pm_flags & PMF_QUEUED ) && !level.mapRotationVoteTime )
     {
       if( client->ps.stats[ STAT_PTEAM ] == PTE_ALIENS )
         G_RemoveFromSpawnQueue( &level.alienSpawnQueue, client->ps.clientNum );
@@ -457,7 +459,7 @@ void SpectatorThink( gentity_t *ent, usercmd_t *ucmd )
       client->ps.stats[ STAT_PCLASS ] = PCL_NONE;
     }
     
-    if( attack1 && client->pers.classSelection == PCL_NONE )
+    if( attack1 && client->pers.classSelection == PCL_NONE && !level.mapRotationVoteTime )
     {
       if( client->pers.teamSelection == PTE_NONE )
         G_TriggerMenu( client->ps.clientNum, MN_TEAM );
@@ -499,6 +501,15 @@ void SpectatorThink( gentity_t *ent, usercmd_t *ucmd )
   {
    G_ToggleFollow( ent );
   }
+
+   if( level.mapRotationVoteTime )
+   {
+     if ( ( attack1 ) )
+       G_IntermissionMapVoteCommand( ent, qtrue, qfalse );
+     if ( ( attack2 ) )
+       G_IntermissionMapVoteCommand( ent, qfalse, qfalse );
+   }
+
 }
 
 
@@ -1439,6 +1450,12 @@ void ClientThink_real( gentity_t *ent )
   //
   if( level.intermissiontime )
   {
+    if( level.mapRotationVoteTime )
+    {
+      SpectatorThink( ent, ucmd );
+      return;
+    }
+
     ClientIntermissionThink( client );
     return;
   }

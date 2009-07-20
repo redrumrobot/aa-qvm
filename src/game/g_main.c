@@ -88,6 +88,7 @@ vmCvar_t  g_voteLimit;
 vmCvar_t  g_suddenDeathVotePercent;
 vmCvar_t  g_suddenDeathVoteDelay;
 vmCvar_t  g_mapVotesPercent;
+vmCvar_t  g_mapRotationVote;
 vmCvar_t  g_designateVotes;
 vmCvar_t  g_extendVotesPercent;
 vmCvar_t  g_extendVotesTime;
@@ -279,6 +280,7 @@ static cvarTable_t   gameCvarTable[ ] =
   { &g_suddenDeathVotePercent, "g_suddenDeathVotePercent", "74", CVAR_ARCHIVE, 0, qfalse },
   { &g_suddenDeathVoteDelay, "g_suddenDeathVoteDelay", "180", CVAR_ARCHIVE, 0, qfalse },
   { &g_mapVotesPercent, "g_mapVotesPercent", "50", CVAR_ARCHIVE, 0, qfalse },
+  { &g_mapRotationVote, "g_mapRotationVote", "15", CVAR_ARCHIVE, 0, qfalse },
   { &g_designateVotes, "g_designateVotes", "0", CVAR_ARCHIVE, 0, qfalse },
   { &g_extendVotesPercent, "g_extendVotesPercent", "75", CVAR_ARCHIVE, 0, qfalse },
   { &g_extendVotesTime, "g_extendVotesTime", "15", CVAR_ARCHIVE, 0, qfalse },
@@ -1615,7 +1617,7 @@ void CalculateRanks( void )
   CheckExitRules( );
 
   // if we are at the intermission, send the new info to everyone
-  if( level.intermissiontime )
+  if( level.intermissiontime && !level.mapRotationVoteTime )
     SendScoreboardMessageToAllClients( );
 }
 
@@ -1757,6 +1759,32 @@ void BeginIntermission( void )
   SendScoreboardMessageToAllClients( );
 }
 
+void BeginMapRotationVote( void )
+{
+  gentity_t *ent;
+  int length;
+  int i;
+
+  if( level.mapRotationVoteTime )
+    return;
+
+  length = g_mapRotationVote.integer;
+  if( length > 60 )
+    length = 60;
+  level.mapRotationVoteTime = level.time + ( length * 1000 );
+
+  for( i = 0; i < level.maxclients; i++ )
+  {
+    ent = g_entities + i;
+
+    if( !ent->inuse )
+      continue;
+
+    ent->client->ps.pm_type = PM_SPECTATOR;
+    ent->client->sess.sessionTeam = TEAM_SPECTATOR;
+    ent->client->sess.spectatorState = SPECTATOR_LOCKED;
+  }
+}
 
 /*
 =============
@@ -1771,6 +1799,20 @@ void ExitLevel( void )
   int       i;
   gclient_t *cl;
   buildHistory_t *tmp, *mark;
+
+  if( level.mapRotationVoteTime )
+  {
+    if( level.time < level.mapRotationVoteTime &&
+        !G_IntermissionMapVoteWinner( ) )
+      return;
+  }
+  else if( g_mapRotationVote.integer > 0 &&
+           G_CheckMapRotationVote() &&
+           !G_MapExists( g_nextMap.string ) )
+  {
+    BeginMapRotationVote( );
+    return;
+  }
 
   while( ( tmp = level.buildHistory ) )
   {
@@ -2487,6 +2529,12 @@ CheckMsgTimer
 */
 void CheckMsgTimer( void )
 {
+  if( level.mapRotationVoteTime )
+  {
+    G_IntermissionMapVoteMessageAll( );
+    return;
+  }
+
   if( !g_msgTime.integer )
     return;
 

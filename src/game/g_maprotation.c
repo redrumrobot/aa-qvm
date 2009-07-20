@@ -27,6 +27,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 mapRotations_t mapRotations;
 
+
+static qboolean G_GetVotedMap( char *name, int size, int rotation, int map );
+
 /*
 ===============
 G_MapExists
@@ -269,6 +272,68 @@ static qboolean G_ParseMapRotation( mapRotation_t *mr, char **text_p )
 
       continue;
     }
+    else if( !Q_stricmp( token, "*VOTE*" ) )
+    {
+      if( mr->numMaps == MAX_MAP_ROTATION_MAPS )
+      {
+        G_Printf( S_COLOR_RED "ERROR: maximum number of maps in one rotation (%d) reached\n",
+                  MAX_MAP_ROTATION_MAPS );
+        return qfalse;
+      }
+      mre = &mr->maps[ mr->numMaps ];
+      Q_strncpyz( mre->name, token, sizeof( mre->name ) );
+
+      token = COM_Parse( text_p );
+
+      if( !Q_stricmp( token, "{" ) )
+      {
+        while( 1 )
+        {
+          token = COM_Parse( text_p );
+
+          if( !token )
+            break;
+
+          if( !Q_stricmp( token, "}" ) )
+          {
+            break;
+          }
+          else
+          {
+            if( mre->numConditions < MAX_MAP_ROTATION_CONDS )
+            {
+              mrc = &mre->conditions[ mre->numConditions ];
+              mrc->lhs = MCV_VOTE;
+              mrc->unconditional = qfalse;
+              Q_strncpyz( mrc->dest, token, sizeof( mrc->dest ) );
+
+              mre->numConditions++;
+            }
+            else
+            {
+              G_Printf( S_COLOR_YELLOW "ERROR: maximum number of maps for one vote (%d) reached\n",
+                        MAX_MAP_ROTATION_CONDS );
+            }
+          }
+        }
+        if( !mre->numConditions )
+        {
+          G_Printf( S_COLOR_YELLOW "WARNING: no maps in *VOTE* section\n" );
+        }
+        else
+        {
+          mr->numMaps++;
+          mnSet = qtrue;
+        }
+      }
+      else
+      {
+        G_Printf( S_COLOR_RED "ERROR: *VOTE* with no section\n" );
+        return qfalse;
+      }
+
+      continue;
+    }
     else if( !Q_stricmp( token, "}" ) )
       return qtrue; //reached the end of this map rotation
 
@@ -398,7 +463,7 @@ static qboolean G_ParseMapRotationFile( const char *fileName )
   {
     for( j = 0; j < mapRotations.rotations[ i ].numMaps; j++ )
     {
-      if( !G_MapExists( mapRotations.rotations[ i ].maps[ j ].name ) )
+      if( !G_MapExists( mapRotations.rotations[ i ].maps[ j ].name ) && Q_stricmp( "*VOTE*", mapRotations.rotations[ i ].maps[ j ].name ) )
       {
         G_Printf( S_COLOR_RED "ERROR: map \"%s\" doesn't exist\n",
           mapRotations.rotations[ i ].maps[ j ].name );
@@ -408,7 +473,7 @@ static qboolean G_ParseMapRotationFile( const char *fileName )
       for( k = 0; k < mapRotations.rotations[ i ].maps[ j ].numConditions; k++ )
       {
         if( !G_MapExists( mapRotations.rotations[ i ].maps[ j ].conditions[ k ].dest ) &&
-            !G_RotationExists( mapRotations.rotations[ i ].maps[ j ].conditions[ k ].dest ) )
+            !G_RotationExists( mapRotations.rotations[ i ].maps[ j ].conditions[ k ].dest ) && Q_stricmp( "*VOTE*", mapRotations.rotations[ i ].maps[ j ].name ) )
         {
           G_Printf( S_COLOR_RED "ERROR: conditional destination \"%s\" doesn't exist\n",
             mapRotations.rotations[ i ].maps[ j ].conditions[ k ].dest );
@@ -547,7 +612,11 @@ static void G_IssueMapChange( int rotation )
 {
   int   i;
   int   map = G_GetCurrentMap( rotation );
-  char  cmd[ MAX_TOKEN_CHARS ];
+  char  cmd[ MAX_TOKEN_CHARS ], mapName[MAX_STRING_CHARS];
+
+  Q_strncpyz(mapName, mapRotations.rotations[rotation].maps[map].name, sizeof(mapName));
+  if (!Q_stricmp(mapName, "*VOTE*"))
+    G_GetVotedMap(mapName, sizeof(mapName), rotation, map );
 
   // allow a manually defined g_layouts setting to override the maprotation
   if( !g_layouts.string[ 0 ] &&
@@ -557,8 +626,7 @@ static void G_IssueMapChange( int rotation )
       mapRotations.rotations[ rotation ].maps[ map ].layouts );
   }
 
-  trap_SendConsoleCommand( EXEC_APPEND, va( "map %s\n",
-    mapRotations.rotations[ rotation ].maps[ map ].name ) );
+  trap_SendConsoleCommand( EXEC_APPEND, va( "map %s\n", mapName ) );
 
   // load up map defaults if g_mapConfigs is set
   G_MapConfigs( mapRotations.rotations[ rotation ].maps[ map ].name );
@@ -640,6 +708,10 @@ static qboolean G_EvaluateMapCondition( mapRotationCondition_t *mrc )
 
     case MCV_LASTWIN:
       return level.lastWin == mrc->lastWin;
+      break;
+
+    case MCV_VOTE:
+      // ignore vote for conditions;
       break;
 
     default:
@@ -799,3 +871,258 @@ void G_InitMapRotations( void )
     }
   }
 }
+
+static char rotationVoteList[ MAX_MAP_ROTATION_CONDS ][ MAX_QPATH ];
+static int rotationVoteLen = 0;
+
+static int rotationVoteClientPosition[ MAX_CLIENTS ];
+static int rotationVoteClientSelection[ MAX_CLIENTS ];
+
+/*
+===============
+G_CheckMapRotationVote
+===============
+*/
+qboolean G_CheckMapRotationVote( void )
+{
+  mapRotation_t           *mr;
+  mapRotationEntry_t      *mre;
+  mapRotationCondition_t  *mrc;
+  int                     currentRotation, currentMap, nextMap;
+  int                     i;
+
+  rotationVoteLen = 0;
+
+  if( g_mapRotationVote.integer < 1 )
+    return qfalse;
+
+  if( ( currentRotation = g_currentMapRotation.integer ) == NOT_ROTATING )
+    return qfalse;
+
+  currentMap = G_GetCurrentMap( currentRotation );
+
+  mr = &mapRotations.rotations[ currentRotation ];
+  nextMap = ( currentMap + 1 ) % mr->numMaps;
+  mre = &mr->maps[ nextMap ];
+
+  for( i = 0; i < mre->numConditions; i++ )
+  {
+    mrc = &mre->conditions[ i ];
+
+    if( mrc->lhs == MCV_VOTE )
+    {
+      Q_strncpyz( rotationVoteList[ rotationVoteLen ], mrc->dest,
+        sizeof(  rotationVoteList[ rotationVoteLen ] ) );
+      rotationVoteLen++;
+      if( rotationVoteLen >= MAX_MAP_ROTATION_CONDS )
+        break;
+    }
+  }
+
+  if( !rotationVoteLen )
+    return qfalse;
+
+  for( i = 0; i < MAX_CLIENTS; i++ )
+  {
+    rotationVoteClientPosition[ i ] = 0;
+    rotationVoteClientSelection[ i ] = -1;
+  }
+
+  return qtrue;
+}
+
+static int G_GetMapVoteWinner( int *winvotes, int *totalvotes )
+{
+  int results[ MAX_MAP_ROTATION_CONDS ];
+  int winner = 0;
+  int wv = 0;
+  int tv = 0;
+  int i, n;
+
+  memset( results, 0, sizeof( results ));
+  for( i = 0; i < MAX_CLIENTS; i++ )
+  {
+    n = rotationVoteClientSelection[ i ];
+    if( n >=0 && n < MAX_MAP_ROTATION_CONDS )
+    {
+      results[ n ] += 1;
+      tv++;
+    }
+  }
+
+  for( i = 0; i < MAX_MAP_ROTATION_CONDS; i++ )
+  {
+    if( results[ i ] > wv )
+    {
+      winner = i;
+      wv = results[ i ];
+    }
+  }
+
+  if( winvotes != NULL )
+    *winvotes = wv;
+  if( totalvotes != NULL )
+    *totalvotes = tv;
+
+  return winner;
+}
+
+qboolean G_IntermissionMapVoteWinner( void )
+{
+  int winner, winvotes, totalvotes;
+  int nonvotes;
+
+  winner = G_GetMapVoteWinner( &winvotes, &totalvotes );
+  if( winvotes * 2 > level.numConnectedClients )
+    return qtrue;
+  nonvotes = level.numConnectedClients - totalvotes;
+  if( nonvotes < 0 )
+    nonvotes = 0;
+  if( winvotes > nonvotes + ( totalvotes - winvotes ) )
+    return qtrue;
+
+  return qfalse;
+}
+
+static qboolean G_GetVotedMap( char *name, int size, int rotation, int map )
+{
+  mapRotation_t           *mr;
+  mapRotationEntry_t      *mre;
+  mapRotationCondition_t  *mrc;
+  int                     i, n;
+  int                     winner;
+  qboolean                found = qfalse;
+
+  if( !rotationVoteLen )
+    return qfalse;
+
+  winner = G_GetMapVoteWinner( NULL, NULL );
+
+  mr = &mapRotations.rotations[ rotation ];
+  mre = &mr->maps[ map ];
+
+  n = 0;
+  for( i = 0; i < mre->numConditions && n < rotationVoteLen; i++ )
+  {
+    mrc = &mre->conditions[ i ];
+
+    if( mrc->lhs == MCV_VOTE )
+    {
+      if( n == winner )
+      {
+        Q_strncpyz( name, mrc->dest, size );
+        found = qtrue;
+        break;
+      }
+      n++;
+    }
+  }
+
+  rotationVoteLen = 0;
+
+  return found;
+}
+
+static void G_IntermissionMapVoteMessageReal( gentity_t *ent, int winner, int winvotes, int totalvotes )
+{
+  int  clientNum;
+  char string[ MAX_STRING_CHARS ];
+  char entry[ MAX_STRING_CHARS ];
+  int  len = 0;
+  int  index, selection;
+  int  i;
+  char *color;
+
+  clientNum = ent-g_entities;
+
+  index = rotationVoteClientSelection[ clientNum ];
+  selection = rotationVoteClientPosition[ clientNum ];
+
+  if( winner < 0 || winner >= MAX_MAP_ROTATION_CONDS )
+    winner = G_GetMapVoteWinner( &winvotes, &totalvotes );
+
+  Q_strncpyz( string, "^7^3Attack^1=^7Down ^3Repair^1=^7Up ^3F1^1=^7Vote\n\n"
+    "^2Map Vote Menu\n"
+    "^1+------------------+\n", sizeof( string ) );
+  for( i = 0; i < rotationVoteLen; i++ )
+  {
+    if( i == index )
+      color = "^2";
+    else if( i == selection )
+      color = "^3";
+    else
+      color = "^7";
+
+    Com_sprintf( entry, sizeof( entry ), "^7%s%s%s %s %s^7%s\n",
+     ( i == index ) ? "^1>>>" : "",
+     ( i == selection ) ? "^7(" : " ",
+     color,
+     rotationVoteList[ i ],
+     ( i == selection ) ? "^7)" : " ",
+     ( i == index ) ? "^1<<<" : "" );
+
+    Q_strcat( string, sizeof( string ), entry );
+    len += strlen( entry );
+  }
+
+  Com_sprintf( entry, sizeof( entry ),
+    "\n^1+----------------+\n^7Leader: '^2%s^7' (^3%d ^7of ^3%d^7)\nVoters: ^3%d\n^7Time Left: ^3%d",
+    rotationVoteList[ winner ],
+    winvotes,
+    totalvotes,
+    totalvotes,
+    ( level.mapRotationVoteTime - level.time ) / 1000 );
+  Q_strcat( string, sizeof( string ), entry );
+
+  trap_SendServerCommand( ent-g_entities, va( "cp \"%s\"\n", string ) );
+}
+
+void G_IntermissionMapVoteMessageAll( void )
+{
+  int winner;
+  int winvotes, totalvotes;
+  int i;
+
+  winner = G_GetMapVoteWinner( &winvotes, &totalvotes );
+  for( i = 0; i < level.maxclients; i++ )
+  {
+    if( level.clients[ i ].pers.connected == CON_CONNECTED )
+      G_IntermissionMapVoteMessageReal( g_entities + i, winner, winvotes, totalvotes );
+  }
+}
+
+void G_IntermissionMapVoteMessage( gentity_t *ent )
+{
+   G_IntermissionMapVoteMessageReal( ent, -1, 0, 0 );
+}
+
+void G_IntermissionMapVoteCommand( gentity_t *ent, qboolean next, qboolean choose )
+{
+  int clientNum;
+  int n;
+
+  clientNum = ent-g_entities;
+
+  if( choose )
+  {
+    rotationVoteClientSelection[ clientNum ] = rotationVoteClientPosition[ clientNum ];
+  }
+  else
+  {
+    n = rotationVoteClientPosition[ clientNum ];
+    if( next )
+      n++;
+    else
+      n--;
+
+    if( n >= rotationVoteLen )
+      n = rotationVoteLen - 1;
+    if( n < 0 )
+      n = 0;
+
+    rotationVoteClientPosition[ clientNum ] = n;
+  }
+
+  G_IntermissionMapVoteMessage( ent );
+}
+
