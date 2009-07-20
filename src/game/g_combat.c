@@ -206,11 +206,22 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
   // broadcast the death event to everyone
   if( !tk )
   {
-    ent = G_TempEntity( self->r.currentOrigin, EV_OBITUARY );
-    ent->s.eventParm = meansOfDeath;
-    ent->s.otherEntityNum = self->s.number;
-    ent->s.otherEntityNum2 = killer;
-    ent->r.svFlags = SVF_BROADCAST; // send to everyone
+    if ( meansOfDeath == MOD_LEVEL2_CLAW )
+    {
+      trap_SendServerCommand( -1, va( "print \"%s^7 bit off %s^7's face\n\"", attacker->client->pers.netname, self->client->pers.netname ) );
+    }
+    else if ( meansOfDeath == MOD_FLAMER )
+    {
+      trap_SendServerCommand( -1, va( "print \"%s^7 turned %s^7 into ash\n\"", attacker->client->pers.netname, self->client->pers.netname ) );
+    }
+    else
+    {
+      ent = G_TempEntity( self->r.currentOrigin, EV_OBITUARY );
+      ent->s.eventParm = meansOfDeath;
+      ent->s.otherEntityNum = self->s.number;
+      ent->s.otherEntityNum2 = killer;
+      ent->r.svFlags = SVF_BROADCAST; // send to everyone
+    }
   }
   else if( attacker && attacker->client )
   {
