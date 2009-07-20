@@ -101,7 +101,12 @@ g_admin_cmd_t g_admin_cmds[ ] =
       "load a map with cheats (and optionally force layout)",
       "[^3mapname^7] (^5layout^7)"
     },
-    
+
+    {"drop", G_admin_drop, "drop",
+      "silently kick a client from the server",
+      "[^3name|slot#^7] [^3message^7]"
+    },
+
     {"help", G_admin_help, "help",
       "display commands available to you or help on a specific command",
       "(^5command^7)"
@@ -3040,6 +3045,58 @@ void G_admin_seen_update( char *guid )
   }
 }
 
+qboolean G_admin_drop( gentity_t *ent, int skiparg )
+{
+   int pids[ MAX_CLIENTS ];
+   char name[ MAX_NAME_LENGTH ], err[ MAX_STRING_CHARS ];
+   int minargc;
+   char msg[ MAX_STRING_CHARS ];
+   char *s;
+   minargc = 2 + skiparg;
+
+   if( G_SayArgc() < minargc )
+   {
+     ADMP( "^3!drop: ^7usage: !drop [name|slot#] [message]\n" );
+     return qfalse;
+   }
+   G_SayArgv( 1 + skiparg, name, sizeof( name ) );
+
+   if( G_ClientNumbersFromString( name, pids ) != 1 )
+   {
+     G_MatchOnePlayer( pids, err, sizeof( err ) );
+     ADMP( va( "^3!drop: ^7%s\n", err ) );
+     return qfalse;
+   }
+   
+   if( !admin_higher( ent, &g_entities[ pids[ 0 ] ] ) )
+   {
+     ADMP( "^3!drop: ^7sorry, but your intended victim has a higher admin"
+         " level than you\n" );
+     return qfalse;
+   }
+   
+   minargc = 3 + skiparg;
+   
+   s = G_SayConcatArgs( 2 + skiparg );
+   
+   Q_strncpyz( msg, s, sizeof( msg ) );
+   
+   //what they get
+   if( G_SayArgc() < minargc )
+   {
+     trap_SendServerCommand( pids[ 0 ], va( "disconnect" ) );
+   }
+   else
+   {
+     trap_SendServerCommand( pids[ 0 ], va( "disconnect \"You have been dropped.\n\n%s^7\n\"", msg ) );
+   }
+   
+   //what people get
+   trap_DropClient( pids[ 0 ], va( "disconnected" ) );
+
+   return qtrue;
+
+}
 
 qboolean G_admin_denybuild( gentity_t *ent, int skiparg )
 {
