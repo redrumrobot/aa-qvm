@@ -3839,32 +3839,29 @@ Cmd_MyStats_f
 */
 void Cmd_MyStats_f( gentity_t *ent )
 {
-
    if(!ent) return;
 
-
-   if( !level.intermissiontime && ent->client->pers.statscounters.timeLastViewed && (level.time - ent->client->pers.statscounters.timeLastViewed) <60000 ) 
+   if( !level.intermissiontime && ent->client->pers.statscounters.timeLastViewed && (level.time - ent->client->pers.statscounters.timeLastViewed) <15000 ) 
    {   
-     ADMP( "You may only check your stats once per minute and during intermission.\n");
+     ADMP( "You may only use /mystats once every 15 seconds and during intermission.\n");
      return;
    }
-   
+
    if( !g_myStats.integer )
    {
-    ADMP( "myStats has been disabled\n");
+    ADMP( "MyStats has been disabled\n");
     return;
    }
-   
+
    ADMP( G_statsString( &ent->client->pers.statscounters, &ent->client->pers.teamSelection ) );
    ent->client->pers.statscounters.timeLastViewed = level.time;
-  
+
   return;
 }
 
 char *G_statsString( statsCounters_t *sc, pTeam_t *pt )
 {
   char *s;
-  
   int percentNearBase=0;
   int percentJetpackWallwalk=0;
   int percentHeadshots=0;
@@ -3876,66 +3873,66 @@ char *G_statsString( statsCounters_t *sc, pTeam_t *pt )
    percentNearBase = (int)(100 *  (float) sc->timeinbase / ((float) (sc->timealive ) ) );
 
   if( sc->timealive && sc->deaths )
-  {
     avgTimeAlive = sc->timealive / sc->deaths;
-  }
 
   avgTimeAliveMins = (int) (avgTimeAlive / 60.0f);
   avgTimeAliveSecs = (int) (avgTimeAlive - (60.0f * avgTimeAliveMins));
-  
+
   if( *pt == PTE_ALIENS )
   {
     if( sc->dretchbasytime > 0 )
-     percentJetpackWallwalk = (int)(100 *  (float) sc->jetpackusewallwalkusetime / ((float) ( sc->dretchbasytime) ) );
-    
+      percentJetpackWallwalk = (int)( 100 *  (float) sc->jetpackusewallwalkusetime / ( (float) ( sc->dretchbasytime ) ) );
+
     if( sc->hitslocational )
-      percentHeadshots = (int)(100 * (float) sc->headshots / ((float) (sc->hitslocational) ) );
-    
-    s = va( "^3Kills:^7 %3i ^3StructKills:^7 %3i ^3Assists:^7 %3i^7 ^3Poisons:^7 %3i ^3Headshots:^7 %3i (%3i)\n^3Deaths:^7 %3i ^3Feeds:^7 %3i ^3Suicides:^7 %3i ^3TKs:^7 %3i ^3Avg Lifespan:^7 %4d:%02d\n^3Damage to:^7 ^3Enemies:^7 %5i ^3Structs:^7 %5i ^3Friendlies:^7 %3i \n^3Structs Built:^7 %3i ^3Time Near Base:^7 %3i ^3Time wallwalking:^7 %3i\n",
-     sc->kills,
-     sc->structskilled,
-     sc->assists,
-     sc->repairspoisons,
-     sc->headshots,
-     percentHeadshots,
-     sc->deaths,
-     sc->feeds,
-     sc->suicides,
-     sc->teamkills,
-     avgTimeAliveMins,
-     avgTimeAliveSecs,
-     sc->dmgdone,
-     sc->structdmgdone,
-     sc->ffdmgdone,
-     sc->structsbuilt,
-     percentNearBase,
-     percentJetpackWallwalk
-         );
+      percentHeadshots = (int)( 100 * (float) sc->headshots / ( (float) ( sc->hitslocational ) ) );
+
+    s = va( "^7Kills:  ^3Kills:^7 %14i ^3Structures:^7 %8i\n        ^3Assists:^7 %12i^7 ^3Poisons:^7 %11i\n        ^3Headshots:^7 %4i (%3i)\n\n^7Deaths: ^3Deaths:^7 %13i ^3Feeds:^7 %13i\n        ^3Suicides:^7 %11i ^3TKs:^7 %15i\n        ^3Avg Lifespan:^7 %4d:%02d\n\n^7Damage: ^3Enemies:^7 %12i ^3Structs:^7 %11i\n        ^3Friendlies:^7 %9i \n\n^7Misc:   ^3Structs Built:^7 %6i ^3Time Near Base:^7 %4i\n        ^3Time wallwalking:^7 %3i\n",
+      sc->kills,
+      sc->structskilled,
+      sc->assists,
+      sc->repairspoisons,
+      sc->headshots,
+      percentHeadshots,
+      sc->deaths,
+      sc->feeds,
+      sc->suicides,
+      sc->teamkills,
+      avgTimeAliveMins,
+      avgTimeAliveSecs,
+      sc->dmgdone,
+      sc->structdmgdone,
+      sc->ffdmgdone,
+      sc->structsbuilt,
+      percentNearBase,
+      percentJetpackWallwalk );
   }
   else if( *pt == PTE_HUMANS )
   {
     if( sc->timealive )
-     percentJetpackWallwalk = (int)(100 *  (float) sc->jetpackusewallwalkusetime / ((float) ( sc->timealive ) ) );
-    s = va( "^3Kills:^7 %3i ^3StructKills:^7 %3i ^3Assists:^7 %3i \n^3Deaths:^7 %3i ^3Feeds:^7 %3i ^3Suicides:^7 %3i ^3TKs:^7 %3i ^3Avg Lifespan:^7 %4d:%02d\n^3Damage to:^7 ^3Enemies:^7 %5i ^3Structs:^7 %5i ^3Friendlies:^7 %3i \n^3Structs Built:^7 %3i ^3Repairs:^7 %4i ^3Time Near Base:^7 %3i ^3Time Jetpacking:^7 %3i\n",
-     sc->kills,
-     sc->structskilled,
-     sc->assists,
-     sc->deaths,
-     sc->feeds,
-     sc->suicides,
-     sc->teamkills,
-     avgTimeAliveMins,
-     avgTimeAliveSecs,
-     sc->dmgdone,
-     sc->structdmgdone,
-     sc->ffdmgdone,
-     sc->structsbuilt,
-     sc->repairspoisons,
-     percentNearBase,
-     percentJetpackWallwalk
-         );
+     percentJetpackWallwalk = (int)( 100 *  (float) sc->jetpackusewallwalkusetime / ( (float) ( sc->timealive ) ) );
+
+    s = va( "^7Kills:  ^3Kills:^7 %14i ^3Structures:^7 %8i\n        ^3Assists:^7 %12i^7\n\n^7Deaths: ^3Deaths:^7 %13i ^3Feeds:^7 %13i\n        ^3Suicides:^7 %11i ^3TKs:^7 %15i\n        ^3Avg Lifespan:^7 %4d:%02d\n\n^7Damage: ^3Enemies:^7 %12i ^3Structs:^7 %11i\n        ^3Friendlies:^7 %9i \n\n^7Misc:   ^3Structs Built:^7 %6i ^3Repairs:^7 %11i\n        ^3Time Near Base:^7 %5i ^3Time Jetpacking:^7 %3i\n",
+      sc->kills,
+      sc->structskilled,
+      sc->assists,
+      sc->deaths,
+      sc->feeds,
+      sc->suicides,
+      sc->teamkills,
+      avgTimeAliveMins,
+      avgTimeAliveSecs,
+      sc->dmgdone,
+      sc->structdmgdone,
+      sc->ffdmgdone,
+      sc->structsbuilt,
+      sc->repairspoisons,
+      percentNearBase,
+      percentJetpackWallwalk );
   }
-  else s="No stats available\n";
+  else
+  {
+    s="No stats available\n";
+  }
 
   return s;
 }
@@ -3960,7 +3957,7 @@ void Cmd_AllStats_f( gentity_t *ent )
   NextViewTime = ent->client->pers.statscounters.allStatsTimeLastViewed + g_allStatsTime.integer * 1000;
   if( !level.intermissiontime && level.time < NextViewTime)
   {
-    ADMP( va("You may only use /allstats once every %i seconds and during intermission. Next valid time is %d:%02d\n",
+    ADMP( va("You may only use /allstats once every %i seconds and during intermission. Next valid time is %d:%02d.\n",
       ( g_allStatsTime.integer ) ? ( g_allStatsTime.integer ) : 60,
       ( NextViewTime / 60000 ),
       ( NextViewTime / 1000 ) % 60 ) );
