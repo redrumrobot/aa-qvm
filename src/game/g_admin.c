@@ -3916,6 +3916,13 @@ qboolean G_admin_help( gentity_t *ent, int skiparg )
 
     // List console commands
     {
+      if ( ent && g_myStats.integer && g_allStats.integer )
+      {
+        if( count > commandsPerLine && ( count % commandsPerLine ) == 1 ) ADMBP( "\n" );
+        ADMBP( va( "^5/%-12s", "allstats" ) );
+        count++;
+      }
+
       if ( ent )
       {
         if( count > commandsPerLine && ( count % commandsPerLine ) == 1 ) ADMBP( "\n" );
