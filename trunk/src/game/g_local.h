@@ -345,6 +345,7 @@ typedef struct
   int dretchbasytime;
   int jetpackusewallwalkusetime;
   int timeLastViewed;
+  int allStatsTimeLastViewed;
 } statsCounters_t;
 
 typedef struct
@@ -1375,6 +1376,8 @@ extern  vmCvar_t  g_privateMessages;
 extern  vmCvar_t  g_decolourLogfiles;
 extern  vmCvar_t  g_publicSayadmins;
 extern  vmCvar_t  g_myStats;
+extern  vmCvar_t  g_allStats;
+extern  vmCvar_t  g_allStatsTime;
 extern  vmCvar_t  g_antiSpawnBlock;
 
 extern  vmCvar_t  g_dretchPunt;
