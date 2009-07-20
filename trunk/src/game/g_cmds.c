@@ -701,10 +701,10 @@ void G_ChangeTeam( gentity_t *ent, pTeam_t newTeam )
   //ent->client->pers.statscounters.kills = 0;
   //ent->client->pers.statscounters.structskilled = 0;
   //ent->client->pers.statscounters.assists = 0;
-  ent->client->pers.statscounters.repairspoisons = 0;
-  ent->client->pers.statscounters.headshots = 0;
-  ent->client->pers.statscounters.hits = 0;
-  ent->client->pers.statscounters.hitslocational = 0;
+  //ent->client->pers.statscounters.repairspoisons = 0;
+  //ent->client->pers.statscounters.headshots = 0;
+  //ent->client->pers.statscounters.hits = 0;
+  //ent->client->pers.statscounters.hitslocational = 0;
   //ent->client->pers.statscounters.deaths = 0;
   //ent->client->pers.statscounters.feeds = 0;
   //ent->client->pers.statscounters.suicides = 0;
@@ -713,8 +713,8 @@ void G_ChangeTeam( gentity_t *ent, pTeam_t newTeam )
   //ent->client->pers.statscounters.structdmgdone = 0;
   //ent->client->pers.statscounters.ffdmgdone = 0;
   //ent->client->pers.statscounters.structsbuilt = 0;
-  ent->client->pers.statscounters.timealive = 0;
-  ent->client->pers.statscounters.timeinbase = 0;
+  //ent->client->pers.statscounters.timealive = 0;
+  //ent->client->pers.statscounters.timeinbase = 0;
   ent->client->pers.statscounters.dretchbasytime = 0;
   ent->client->pers.statscounters.jetpackusewallwalkusetime = 0;
 
