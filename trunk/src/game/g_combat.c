@@ -136,6 +136,7 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
   float     percentDamage = 0.0f;
   gentity_t *player;
   qboolean  tk = qfalse;
+  int       spreeRate = 0;
 
 
   if( self->client->ps.pm_type == PM_DEAD )
@@ -202,6 +203,16 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
   //TA: deactivate all upgrades
   for( i = UP_NONE + 1; i < UP_NUM_UPGRADES; i++ )
     BG_DeactivateUpgrade( i, self->client->ps.stats );
+
+  // killing spree over
+  if( self->client->pers.statscounters.spreekills == -1 )
+  {
+    spreeRate = 2;
+    trap_SendServerCommand( -1,
+     va( "print \"%s^7's killing spree has come to an end\n\"",
+     self->client->pers.netname ) );
+  }
+  self->client->pers.statscounters.spreekills = 0;
 
   // broadcast the death event to everyone
   if( !tk )
@@ -324,6 +335,19 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
       {
          level.humanStatsCounters.kills++;
       }
+
+      if( g_killingSpree.integer > 2 )
+      {
+        if( attacker->client->pers.statscounters.spreekills >= 0 )
+          attacker->client->pers.statscounters.spreekills += 60;
+        if( attacker->client->pers.statscounters.spreekills > ( g_killingSpree.integer - 1 ) * 60 )
+        {
+          attacker->client->pers.statscounters.spreekills = -1;
+          trap_SendServerCommand( -1,
+            va( "print \"%s^3 is on a killing spree!\n\"",
+            attacker->client->pers.netname ) );
+        }
+      }
      }
     
     if( attacker == self )
@@ -356,6 +380,13 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
       {
         self->client->pers.statscounters.feeds++;
         level.humanStatsCounters.feeds++;
+
+        if( g_feedingSpree.integer &&
+            level.reactorPresent &&
+            !G_BuildableRange( self->client->ps.origin, 600, BA_H_REACTOR ) )
+        {
+          self->client->pers.statscounters.spreefeeds += 60;
+        }
       }
     }
     else if( self->client->ps.stats[ STAT_PTEAM ] == PTE_ALIENS )
@@ -365,6 +396,13 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
       {
         self->client->pers.statscounters.feeds++;
         level.alienStatsCounters.feeds++;
+
+        if( g_feedingSpree.integer &&
+            level.overmindPresent &&
+            !G_BuildableRange( self->client->ps.origin, 600, BA_A_OVERMIND ) )
+        {
+          self->client->pers.statscounters.spreefeeds += 60;
+        }
       }
     }
   }
@@ -395,6 +433,9 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
           player->client->pers.statscounters.assists++;
           level.humanStatsCounters.assists++;
         }
+
+        if( spreeRate && player == attacker )
+          percentDamage *= (float)spreeRate;
 
         //add credit
         G_AddCreditToClient( player->client,
@@ -438,7 +479,10 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
         if( frags > 0 )
         {
           //add kills
-          G_AddCreditToClient( player->client, frags, qtrue );
+          if( spreeRate && player == attacker )
+            G_AddCreditToClient( player->client, frags * spreeRate, qtrue );
+          else
+            G_AddCreditToClient( player->client, frags, qtrue );
 
           //can't revist this account later
           self->credits[ i ] = 0;
@@ -479,7 +523,10 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
             player = g_entities + topClient;
 
             //add kills
-            G_AddCreditToClient( player->client, 1, qtrue );
+            if( spreeRate && player == attacker )
+              G_AddCreditToClient( player->client, spreeRate, qtrue );
+            else
+              G_AddCreditToClient( player->client, 1, qtrue );
 
             //can't revist this account again
             self->credits[ topClient ] = 0;
@@ -529,6 +576,20 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
   // don't allow respawn until the death anim is done
   // g_forcerespawn may force spawning at some later time
   self->client->respawnTime = level.time + 1700;
+
+  if( g_feedingSpree.integer > 2 )
+  {
+    int maxfeed;
+
+    maxfeed = (g_feedingSpree.integer - 1) * 60;
+    if( self->client->pers.statscounters.spreefeeds > maxfeed )
+    {
+      self->client->respawnTime += 100 * (self->client->pers.statscounters.spreefeeds - maxfeed );
+      trap_SendServerCommand( self->client->ps.clientNum,
+        va( "print \"You are on a feeding spree! respawn delayed %d seconds\n\"",
+        (self->client->respawnTime - level.time) / 1000 ) );
+    }
+  }
 
   // remove powerups
   memset( self->client->ps.powerups, 0, sizeof( self->client->ps.powerups ) );

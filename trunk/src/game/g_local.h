@@ -340,6 +340,8 @@ typedef struct
   int hits;
   int hitslocational;
   short teamkills;
+  int spreekills;
+  int spreefeeds;
   int dretchbasytime;
   int jetpackusewallwalkusetime;
   int timeLastViewed;
@@ -1363,6 +1365,9 @@ extern  vmCvar_t  g_minLevelToJoinTeam;
 extern  vmCvar_t  g_forceAutoSelect;
 extern  vmCvar_t  g_minLevelToSpecMM1;
 extern  vmCvar_t  g_banNotice;
+
+extern  vmCvar_t  g_killingSpree;
+extern  vmCvar_t  g_feedingSpree;
 
 extern  vmCvar_t  g_killerHp;
 
