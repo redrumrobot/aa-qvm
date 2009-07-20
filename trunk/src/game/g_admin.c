@@ -3860,75 +3860,149 @@ qboolean G_admin_showbans( gentity_t *ent, int skiparg )
 qboolean G_admin_help( gentity_t *ent, int skiparg )
 {
   int i;
-  char additional[ MAX_STRING_CHARS ] = "\nThe following non-standard /commands may also be available to you: \n^3";
 
   if( G_SayArgc() < 2 + skiparg )
   {
-    int j = 0;
-    int count = 0;
+    int count = 1;
+    int commandsPerLine = 5;
 
     ADMBP_begin();
+
+    // List admin commands
     for( i = 0; i < adminNumCmds; i++ )
     {
-      if( G_admin_permission( ent, g_admin_cmds[ i ].flag ) )
-      {
-        ADMBP( va( "^3!%-12s", g_admin_cmds[ i ].keyword ) );
-        j++;
-        count++;
-      }
-      // show 6 commands per line
-      if( j == 6 )
-      {
-        ADMBP( "\n" );
-        j = 0;
-      }
+      if( !G_admin_permission( ent, g_admin_cmds[ i ].flag ) )
+        continue;
+
+      if( count > commandsPerLine && ( count % commandsPerLine ) == 1 ) ADMBP( "\n" );
+
+      ADMBP( va( "^3!%-12s", g_admin_cmds[ i ].keyword ) );
+      count++;
+
     }
+
+    // List custom commands
     for( i = 0; i < MAX_ADMIN_COMMANDS && g_admin_commands[ i ]; i++ )
     {
       if( !G_admin_permission( ent, g_admin_commands[ i ]->flag ) )
         continue;
-      ADMBP( va( "^3!%-12s", g_admin_commands[ i ]->command ) );
-      j++;
-      count++;
-      // show 6 commands per line
-      if( j == 6 )
-      {
-        ADMBP( "\n" );
-        j = 0;
-      }
-    }
-    
-    if( ent )
-      strcat( additional, " /builder /say_area" );
-    if( g_publicSayadmins.integer || G_admin_permission( ent, ADMF_ADMINCHAT ) )
-      strcat( additional, " /a /say_admins" );
-    if( g_privateMessages.integer )
-      strcat( additional, " /m" );
-    if( ent && g_markDeconstruct.integer == 2 )
-    	strcat( additional, " /mark" );
-    if( ent && g_actionPrefix.string[0] )
-      strcat( additional, " /me /mt /me_team" );
-    if( ent && g_myStats.integer )
-      strcat( additional, " /mystats" );
-    if( ent && ent->client )
-    {
-      if( ent->client->pers.designatedBuilder )
-      {
-        strcat( additional, " /protect /resign" );
-      }
-    }
-    if( ent && g_allowShare.integer )
-      strcat( additional, " /share /donate" );
-    if( ent && g_teamStatus.integer )
-      strcat( additional, " /teamstatus" );
 
-    if( count )
-      ADMBP( "\n" );
-    ADMBP( va( "^3!help: ^7%i available commands\n", count ) );
-    ADMBP( "run !help [^3command^7] for help with a specific command.\n" );
-    ADMBP( va( "%s\n", additional ) );
-    ADMBP_end();
-    
+      if( count > commandsPerLine && ( count % commandsPerLine ) == 1 ) ADMBP( "\n" );
+
+      ADMBP( va( "^3!%-12s", g_admin_commands[ i ]->command ) );
+      count++;
+    }
+
+    // List console commands
+    {
+      if ( ent )
+      {
+        if( count > commandsPerLine && ( count % commandsPerLine ) == 1 ) ADMBP( "\n" );
+        ADMBP( va( "^5/%-12s", "builder" ) );
+        count++;
+      }
+
+      if ( ent && g_allowShare.integer )
+      {
+        if( count > commandsPerLine && ( count % commandsPerLine ) == 1 ) ADMBP( "\n" );
+        ADMBP( va( "^5/%-12s", "donate" ) );
+        count++;
+      }
+
+      if ( g_privateMessages.integer )
+      {
+        if( count > commandsPerLine && ( count % commandsPerLine ) == 1 ) ADMBP( "\n" );
+        ADMBP( va( "^5/%-12s", "m" ) );
+        count++;
+      }
+
+      if ( ent && g_markDeconstruct.integer == 2 )
+      {
+        if( count > commandsPerLine && ( count % commandsPerLine ) == 1 ) ADMBP( "\n" );
+        ADMBP( va( "^5/%-12s", "mark" ) );
+        count++;
+      }
+
+      if ( ent && g_actionPrefix.string[0] )
+      {
+        if( count > commandsPerLine && ( count % commandsPerLine ) == 1 ) ADMBP( "\n" );
+        ADMBP( va( "^5/%-12s", "me" ) );
+        count++;
+      }
+
+      if ( ent && g_actionPrefix.string[0] )
+      {
+        if( count > commandsPerLine && ( count % commandsPerLine ) == 1 ) ADMBP( "\n" );
+        ADMBP( va( "^5/%-12s", "me_team" ) );
+        count++;
+      }
+
+      if ( ent && g_actionPrefix.string[0] )
+      {
+        if( count > commandsPerLine && ( count % commandsPerLine ) == 1 ) ADMBP( "\n" );
+        ADMBP( va( "^5/%-12s", "mt" ) );
+        count++;
+      }
+
+      if ( ent && g_myStats.integer )
+      {
+        if( count > commandsPerLine && ( count % commandsPerLine ) == 1 ) ADMBP( "\n" );
+        ADMBP( va( "^5/%-12s", "mystats" ) );
+        count++;
+      }
+
+      if ( ent->client->pers.designatedBuilder )
+      {
+        if( count > commandsPerLine && ( count % commandsPerLine ) == 1 ) ADMBP( "\n" );
+        ADMBP( va( "^5/%-12s", "protect" ) );
+        count++;
+      }
+
+      if ( ent->client->pers.designatedBuilder )
+      {
+        if( count > commandsPerLine && ( count % commandsPerLine ) == 1 ) ADMBP( "\n" );
+        ADMBP( va( "^5/%-12s", "resign" ) );
+        count++;
+      }
+
+      if ( g_publicSayadmins.integer || G_admin_permission( ent, ADMF_ADMINCHAT ) )
+      {
+        if( count > commandsPerLine && ( count % commandsPerLine ) == 1 ) ADMBP( "\n" );
+        ADMBP( va( "^5/%-12s", "say_admins" ) );
+        count++;
+      }
+
+      if ( ent )
+      {
+        if( count > commandsPerLine && ( count % commandsPerLine ) == 1 ) ADMBP( "\n" );
+        ADMBP( va( "^5/%-12s", "say_area" ) );
+        count++;
+      }
+
+      if ( ent && g_allowShare.integer )
+      {
+        if( count > commandsPerLine && ( count % commandsPerLine ) == 1 ) ADMBP( "\n" );
+        ADMBP( va( "^5/%-12s", "share" ) );
+        count++;
+      }
+
+      if ( ent && g_teamStatus.integer )
+      {
+        if( count > commandsPerLine && ( count % commandsPerLine ) == 1 ) ADMBP( "\n" );
+        ADMBP( va( "^5/%-12s", "teamstatus" ) );
+        count++;
+      }
+    }
+
+    // Output everything
+    if( count > 1 )
+    {
+      ADMBP( "\n\n" );
+      ADMBP( va( "^3!help: ^7%i available commands\n", count -1 ) );
+      ADMBP( "       ^7run !help [^3!command^7] for command-specific help.\n" );
+      ADMBP_end();
+    }
+
     return qtrue;
   }
   else
@@ -3951,12 +4025,10 @@ qboolean G_admin_help( gentity_t *ent, int skiparg )
           ADMBP_end();
           return qfalse;
         }
-        ADMBP( va( "^3!help: ^7help for '!%s':\n",
-          g_admin_cmds[ i ].keyword ) );
+        ADMBP( va( "^3!help: ^7help for '!%s':\n", g_admin_cmds[ i ].keyword ) );
         ADMBP( va( " ^3Function: ^7%s\n", g_admin_cmds[ i ].function ) );
-        ADMBP( va( " ^3Syntax: ^7!%s %s\n", g_admin_cmds[ i ].keyword,
-                 g_admin_cmds[ i ].syntax ) );
-        ADMBP( va( " ^3Flag: ^7'%s'\n", g_admin_cmds[ i ].flag ) );
+        ADMBP( va( " ^3Syntax:   ^7!%s %s\n", g_admin_cmds[ i ].keyword, g_admin_cmds[ i ].syntax ) );
+        ADMBP( va( " ^3Flag:     ^7'%c'\n", g_admin_cmds[ i ].flag[ 0 ] ) );
         ADMBP_end();
         return qtrue;
       }
@@ -3965,17 +4037,16 @@ qboolean G_admin_help( gentity_t *ent, int skiparg )
     {
       if( !Q_stricmp( cmd, g_admin_commands[ i ]->command ) )
       {
-        if( !G_admin_permission( ent, g_admin_commands[ i ]->flag ) )
+        if( !G_admin_permission( ent, g_admin_cmds[ i ].flag ) )
         {
           ADMBP( va( "^3!help: ^7you have no permission to use '%s'\n",
                    g_admin_commands[ i ]->command ) );
           ADMBP_end();
           return qfalse;
         }
-        ADMBP( va( "^3!help: ^7help for '%s':\n",
-          g_admin_commands[ i ]->command ) );
+        ADMBP( va( "^3!help: ^7help for '%s':\n", g_admin_commands[ i ]->command ) );
         ADMBP( va( " ^3Description: ^7%s\n", g_admin_commands[ i ]->desc ) );
-        ADMBP( va( " ^3Syntax: ^7!%s\n", g_admin_commands[ i ]->command ) );
+        ADMBP( va( " ^3Syntax:      ^7!%s\n", g_admin_commands[ i ]->command ) );
         ADMBP_end();
         return qtrue;
       }
@@ -4034,7 +4105,7 @@ qboolean G_admin_allready( gentity_t *ent, int skiparg )
   int i = 0;
   gclient_t *cl;
 
-  if( !level.intermissiontime )
+  if( !level.intermissiontime || level.mapRotationVoteTime )
   {
     ADMP( "^3!allready: ^7this command is only valid during intermission\n" );
     return qfalse;
