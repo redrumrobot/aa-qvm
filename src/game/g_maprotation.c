@@ -1041,32 +1041,32 @@ static void G_IntermissionMapVoteMessageReal( gentity_t *ent, int winner, int wi
   if( winner < 0 || winner >= MAX_MAP_ROTATION_CONDS )
     winner = G_GetMapVoteWinner( &winvotes, &totalvotes );
 
-  Q_strncpyz( string, "^7^3Attack^1=^7Down ^3Repair^1=^7Up ^3F1^1=^7Vote\n\n"
-    "^2Map Vote Menu\n"
-    "^1+------------------+\n", sizeof( string ) );
+  Q_strncpyz( string, "^7Attack^5=^7Down Repair^5=^7Up ^7F1^5=^7Vote\n\n"
+    "^7Map Vote Menu\n"
+    "^5+^7------------------^5+\n", sizeof( string ) );
   for( i = 0; i < rotationVoteLen; i++ )
   {
     if( i == index )
-      color = "^2";
+      color = "^7";
     else if( i == selection )
-      color = "^3";
+      color = "^5";
     else
       color = "^7";
 
     Com_sprintf( entry, sizeof( entry ), "^7%s%s%s %s %s^7%s\n",
-     ( i == index ) ? "^1>>>" : "",
+     ( i == index ) ? "^5>>>" : "",
      ( i == selection ) ? "^7(" : " ",
      color,
      rotationVoteList[ i ],
      ( i == selection ) ? "^7)" : " ",
-     ( i == index ) ? "^1<<<" : "" );
+     ( i == index ) ? "^5<<<" : "" );
 
     Q_strcat( string, sizeof( string ), entry );
     len += strlen( entry );
   }
 
   Com_sprintf( entry, sizeof( entry ),
-    "\n^1+----------------+\n^7Leader: '^2%s^7' (^3%d ^7of ^3%d^7)\nVoters: ^3%d\n^7Time Left: ^3%d",
+    "\n^5+^7----------------^5+\n^7Leader: '^5%s^7' (^5%d ^7of ^5%d^7)\n^7Voters: ^5%d\n^7Time Left: ^5%d",
     rotationVoteList[ winner ],
     winvotes,
     totalvotes,
