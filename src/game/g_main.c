@@ -172,6 +172,9 @@ vmCvar_t  g_banNotice;
 
 vmCvar_t  g_killerHp;
 
+vmCvar_t  g_killingSpree;
+vmCvar_t  g_feedingSpree;
+
 vmCvar_t  g_buildLogMaxLength;
 
 vmCvar_t  g_tag;
@@ -359,6 +362,9 @@ static cvarTable_t   gameCvarTable[ ] =
   { &g_publicSayadmins, "g_publicSayadmins", "1", CVAR_ARCHIVE, 0, qfalse  },    
   { &g_minLevelToSpecMM1, "g_minLevelToSpecMM1", "0", CVAR_ARCHIVE, 0, qfalse  },
   { &g_antiSpawnBlock, "g_antiSpawnBlock", "0", CVAR_ARCHIVE, 0, qfalse  },
+
+  { &g_killingSpree, "g_killingSpree", "0", CVAR_ARCHIVE, 0, qfalse  },
+  { &g_feedingSpree, "g_feedingSpree", "0", CVAR_ARCHIVE, 0, qfalse  },
   
   { &g_killerHp, "g_killerHp", "0", CVAR_ARCHIVE, 0, qtrue  },
   
