@@ -221,10 +221,6 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
     {
       trap_SendServerCommand( -1, va( "print \"%s^7 bit off %s^7's face\n\"", attacker->client->pers.netname, self->client->pers.netname ) );
     }
-    else if ( meansOfDeath == MOD_FLAMER )
-    {
-      trap_SendServerCommand( -1, va( "print \"%s^7 turned %s^7 into ash\n\"", attacker->client->pers.netname, self->client->pers.netname ) );
-    }
     else
     {
       ent = G_TempEntity( self->r.currentOrigin, EV_OBITUARY );
