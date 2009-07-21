@@ -224,7 +224,7 @@ static cvarTable_t   gameCvarTable[ ] =
   { &g_timelimit, "timelimit", "45", CVAR_SERVERINFO | CVAR_ARCHIVE | CVAR_NORESTART, 0, qtrue },
   { &g_suddenDeathTime, "g_suddenDeathTime", "30", CVAR_SERVERINFO | CVAR_ARCHIVE | CVAR_NORESTART, 0, qtrue },
   { &g_suddenDeathMode, "g_suddenDeathMode", "0", CVAR_SERVERINFO | CVAR_ARCHIVE | CVAR_NORESTART, 0, qtrue },
-  { &g_suddenDeath, "g_suddenDeath", "0", CVAR_SERVERINFO | CVAR_NORESTART, 0, qtrue },
+  { &g_suddenDeath, "g_suddenDeath", "0", CVAR_SERVERINFO | CVAR_NORESTART, 0, qfalse },
 
   { &g_synchronousClients, "g_synchronousClients", "0", CVAR_SYSTEMINFO, 0, qfalse  },
 
@@ -1256,6 +1256,7 @@ void G_CalculateBuildPoints( void )
       if( level.suddenDeathWarning < TW_PASSED )
       {
         trap_SendServerCommand( -1, "cp \"Sudden Death!\"" );
+        trap_SendServerCommand( -1, "print \"Sudden Death!\"" );
         G_LogPrintf("Beginning Sudden Death (Mode %d)\n",g_suddenDeathMode.integer);
         localHTP = 0;
         localATP = 0;
@@ -1318,6 +1319,8 @@ void G_CalculateBuildPoints( void )
            (  level.suddenDeathWarning < TW_IMMINENT ) )
        {
          trap_SendServerCommand( -1, va("cp \"Sudden Death in %d seconds!\"", 
+               (int)(G_TimeTilSuddenDeath() / 1000 ) ) );
+         trap_SendServerCommand( -1, va("print \"Sudden Death in %d seconds!\"", 
                (int)(G_TimeTilSuddenDeath() / 1000 ) ) );
          level.suddenDeathWarning = TW_IMMINENT;
        }
