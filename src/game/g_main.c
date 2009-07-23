@@ -1257,7 +1257,7 @@ void G_CalculateBuildPoints( void )
       if( level.suddenDeathWarning < TW_PASSED )
       {
         trap_SendServerCommand( -1, "cp \"Sudden Death!\"" );
-        trap_SendServerCommand( -1, "print \"Sudden Death!\"" );
+        trap_SendServerCommand( -1, "print \"Sudden Death!\n\"" );
         G_LogPrintf("Beginning Sudden Death (Mode %d)\n",g_suddenDeathMode.integer);
         localHTP = 0;
         localATP = 0;
@@ -1321,7 +1321,7 @@ void G_CalculateBuildPoints( void )
        {
          trap_SendServerCommand( -1, va("cp \"Sudden Death in %d seconds!\"", 
                (int)(G_TimeTilSuddenDeath() / 1000 ) ) );
-         trap_SendServerCommand( -1, va("print \"Sudden Death in %d seconds!\"", 
+         trap_SendServerCommand( -1, va("print \"Sudden Death in %d seconds!\n\"", 
                (int)(G_TimeTilSuddenDeath() / 1000 ) ) );
          level.suddenDeathWarning = TW_IMMINENT;
        }
