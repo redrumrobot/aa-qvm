@@ -1339,7 +1339,6 @@ extern  vmCvar_t  g_disabledBuildables;
 
 extern  vmCvar_t  g_markDeconstruct;
 extern  vmCvar_t  g_deconDead;
-extern  vmCvar_t  g_minDeconLevel;
 
 extern  vmCvar_t  g_debugMapRotation;
 extern  vmCvar_t  g_currentMapRotation;

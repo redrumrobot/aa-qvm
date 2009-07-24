@@ -1432,6 +1432,13 @@ void Cmd_CallVote_f( gentity_t *ent )
     return;
   }
 
+  if( !G_admin_permission( ent, ADMF_CAN_VOTE ) )
+  {
+    trap_SendServerCommand( ent-g_entities,
+      "print \"You do not have voting rights.\n\"" );
+    return;
+  }
+
   // Flood limit.  If they're talking too fast, determine that and return.
   if( g_floodMinTime.integer )
     if ( G_Flood_Limited( ent ) )
@@ -1987,6 +1994,13 @@ void Cmd_CallTeamVote_f( gentity_t *ent )
   if( !g_allowVote.integer )
   {
     trap_SendServerCommand( ent-g_entities, "print \"Voting not allowed here\n\"" );
+    return;
+  }
+
+  if( !G_admin_permission( ent, ADMF_CAN_VOTE ) )
+  {
+    trap_SendServerCommand( ent-g_entities,
+      "print \"You do not have voting rights.\n\"" );
     return;
   }
 
@@ -2767,7 +2781,7 @@ void Cmd_Destroy_f( gentity_t *ent )
     return;
   }
 
-  if( G_admin_level( ent ) < g_minDeconLevel.integer )
+  if( !G_admin_permission( ent, ADMF_CAN_DECON ) )
   {
     trap_SendServerCommand( ent-g_entities,
       "print \"You do not have deconstruction rights.\n\"" );
@@ -2941,7 +2955,7 @@ void Cmd_Mark_f( gentity_t *ent )
     return;
   }
 
-  if( G_admin_level( ent ) < g_minDeconLevel.integer )
+  if( !G_admin_permission( ent, ADMF_CAN_DECON ) )
   {
     trap_SendServerCommand( ent-g_entities,
       "print \"You do not have deconstruction rights.\n\"" );
