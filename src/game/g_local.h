@@ -1287,9 +1287,13 @@ extern  vmCvar_t  g_warmup;
 extern  vmCvar_t  g_warmupMode;
 extern  vmCvar_t  g_doWarmup;
 extern  vmCvar_t  g_blood;
+
 extern  vmCvar_t  g_allowVote;
 extern  vmCvar_t  g_requireVoteReasons;
 extern  vmCvar_t  g_voteLimit;
+extern  vmCvar_t  g_voteMinTime;
+extern  vmCvar_t  g_mapvoteMaxTime;
+extern  vmCvar_t  g_votableMaps;
 extern  vmCvar_t  g_suddenDeathVotePercent;
 extern  vmCvar_t  g_suddenDeathVoteDelay;
 extern  vmCvar_t  g_mapVotesPercent;
@@ -1298,6 +1302,7 @@ extern  vmCvar_t  g_designateVotes;
 extern  vmCvar_t  g_extendVotesPercent;
 extern  vmCvar_t  g_extendVotesTime;
 extern  vmCvar_t  g_extendVotesCount;
+
 extern  vmCvar_t  g_teamAutoJoin;
 extern  vmCvar_t  g_teamForceBalance;
 extern  vmCvar_t  g_banIPs;
@@ -1385,10 +1390,6 @@ extern  vmCvar_t  g_dretchPunt;
 
 extern  vmCvar_t  g_devmapNoGod;
 extern  vmCvar_t  g_devmapNoStructDmg;
-
-extern  vmCvar_t  g_voteMinTime;
-extern  vmCvar_t  g_mapvoteMaxTime;
-extern  vmCvar_t  g_votableMaps;
 
 extern  vmCvar_t  g_msg;
 extern  vmCvar_t  g_msgTime;
