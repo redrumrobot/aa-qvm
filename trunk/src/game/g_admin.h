@@ -56,6 +56,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  * CANPERMBAN - does not need to specify a duration for a ban
  * TEAMCHATCMD - can run commands from team chat
  * ACTIVITY - inactivity rules do not apply to them
+ *
  * IMMUTABLE - admin commands cannot be used on them
  * INCOGNITO - does not show up as an admin in !listplayers
  * ADMINCHAT - receives and can send /a admin messages
@@ -63,8 +64,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  * DBUILDER - permanent designated builder
  * STEALTH - uses admin stealth
  * ALLFLAGS - all flags (including command flags) apply to this player
+ *
+ * CANVOTE - can call votes and team votes
+ * CANDECON - can deconstruct and mark
  */
-
 
 #define ADMF_IMMUNITY            "IMMUNITY"
 #define ADMF_NOCENSORFLOOD       "NOCENSORFLOOD"
@@ -86,6 +89,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #define ADMF_ALLFLAGS            "ALLFLAGS"
 
 #define ADMF_BAN_IMMUNITY        "BANIMMUNITY"
+
+// AA-QVM
+#define ADMF_CAN_VOTE            "CANVOTE"
+#define ADMF_CAN_DECON           "CANDECON"
 
 #define MAX_ADMIN_LISTITEMS 20
 #define MAX_ADMIN_SHOWBANS 10

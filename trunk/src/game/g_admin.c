@@ -711,33 +711,33 @@ static void admin_default_levels( void )
   Q_strncpyz( g_admin_levels[ 0 ]->name, "^4Unknown Player",
     sizeof( l->name ) );
   Q_strncpyz( g_admin_levels[ 0 ]->flags, 
-    "listplayers admintest help specme time", 
+    "listplayers admintest help specme time CANDECON CANVOTE", 
     sizeof( l->flags ) );
 
   Q_strncpyz( g_admin_levels[ 1 ]->name, "^5Server Regular",
     sizeof( l->name ) );
   Q_strncpyz( g_admin_levels[ 1 ]->flags, 
-    "listplayers admintest help specme time", 
+    "listplayers admintest help specme time CANDECON CANVOTE", 
     sizeof( l->flags ) );
 
   Q_strncpyz( g_admin_levels[ 2 ]->name, "^6Team Manager",
     sizeof( l->name ) );
   Q_strncpyz( g_admin_levels[ 2 ]->flags, 
-    "listplayers admintest help specme time putteam spec999 warn denybuild",
+    "listplayers admintest help specme time putteam spec999 warn denybuild CANDECON CANVOTE",
     sizeof( l->flags ) );
 
   Q_strncpyz( g_admin_levels[ 3 ]->name, "^2Junior Admin",
     sizeof( l->name ) );
   Q_strncpyz( g_admin_levels[ 3 ]->flags, 
     "listplayers admintest help specme time putteam spec999 kick mute warn "
-    "denybuild ADMINCHAT SEESFULLLISTPLAYERS",
+    "denybuild CANDECON CANVOTE ADMINCHAT SEESFULLLISTPLAYERS",
     sizeof( l->flags ) );
 
   Q_strncpyz( g_admin_levels[ 4 ]->name, "^3Senior Admin",
     sizeof( l->name ) );
   Q_strncpyz( g_admin_levels[ 4 ]->flags, 
     "listplayers admintest help specme time putteam spec999 kick mute showbans "
-    "ban namelog warn denybuild ADMINCHAT SEESFULLLISTPLAYERS",
+    "ban namelog warn denybuild CANDECON CANVOTE ADMINCHAT SEESFULLLISTPLAYERS",
     sizeof( l->flags ) );
 
   Q_strncpyz( g_admin_levels[ 5 ]->name, "^1Server Operator",
