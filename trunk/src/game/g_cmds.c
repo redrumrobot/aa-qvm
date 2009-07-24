@@ -1431,7 +1431,7 @@ void Cmd_CallVote_f( gentity_t *ent )
     trap_SendServerCommand( ent-g_entities, "print \"Voting not allowed here\n\"" );
     return;
   }
-  
+
   // Flood limit.  If they're talking too fast, determine that and return.
   if( g_floodMinTime.integer )
     if ( G_Flood_Limited( ent ) )

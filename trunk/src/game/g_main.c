@@ -82,9 +82,13 @@ vmCvar_t  g_logFileSync;
 vmCvar_t  g_blood;
 vmCvar_t  g_podiumDist;
 vmCvar_t  g_podiumDrop;
+
 vmCvar_t  g_allowVote;
 vmCvar_t  g_requireVoteReasons;
 vmCvar_t  g_voteLimit;
+vmCvar_t  g_voteMinTime;
+vmCvar_t  g_mapvoteMaxTime;
+vmCvar_t  g_votableMaps;
 vmCvar_t  g_suddenDeathVotePercent;
 vmCvar_t  g_suddenDeathVoteDelay;
 vmCvar_t  g_mapVotesPercent;
@@ -93,6 +97,7 @@ vmCvar_t  g_designateVotes;
 vmCvar_t  g_extendVotesPercent;
 vmCvar_t  g_extendVotesTime;
 vmCvar_t  g_extendVotesCount;
+
 vmCvar_t  g_teamAutoJoin;
 vmCvar_t  g_teamForceBalance;
 vmCvar_t  g_banIPs;
@@ -188,10 +193,6 @@ vmCvar_t  g_allowShare;
 
 vmCvar_t  g_devmapNoGod;
 vmCvar_t  g_devmapNoStructDmg;
-
-vmCvar_t  g_voteMinTime;
-vmCvar_t  g_mapvoteMaxTime;
-vmCvar_t  g_votableMaps;
 
 vmCvar_t  g_msg;
 vmCvar_t  g_msgTime;
