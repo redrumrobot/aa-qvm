@@ -67,6 +67,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
  * CANVOTE - can call votes and team votes
  * CANDECON - can deconstruct and mark
+ * ALWAYSVOTE - can vote even when g_allowVote is off (maximum vote restrictions still apply)
  */
 
 #define ADMF_IMMUNITY            "IMMUNITY"
@@ -93,6 +94,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 // AA-QVM
 #define ADMF_CAN_VOTE            "CANVOTE"
 #define ADMF_CAN_DECON           "CANDECON"
+#define ADMF_ALWAYS_VOTE         "ALWAYSVOTE"
 
 #define MAX_ADMIN_LISTITEMS 20
 #define MAX_ADMIN_SHOWBANS 10
