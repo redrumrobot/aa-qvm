@@ -1047,7 +1047,7 @@ static void G_IntermissionMapVoteMessageReal( gentity_t *ent, int winner, int wi
   for( i = 0; i < rotationVoteLen; i++ )
   {
     if( i == index )
-      color = "^7";
+      color = "^5";
     else if( i == selection )
       color = "^5";
     else
@@ -1066,7 +1066,7 @@ static void G_IntermissionMapVoteMessageReal( gentity_t *ent, int winner, int wi
   }
 
   Com_sprintf( entry, sizeof( entry ),
-    "\n^5+^7----------------^5+\n^7Leader: '^5%s^7' (^5%d ^7of ^5%d^7)\n^7Voters: ^5%d\n^7Time Left: ^5%d",
+    "\n^5+^7-----------------^5+\n^7Leader: '^5%s^7' (^5%d ^7of ^5%d^7)\n^7Voters: ^5%d\n^7Time Left: ^5%d",
     rotationVoteList[ winner ],
     winvotes,
     totalvotes,
