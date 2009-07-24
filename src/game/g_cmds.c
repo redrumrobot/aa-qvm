@@ -1426,7 +1426,8 @@ void Cmd_CallVote_f( gentity_t *ent )
   arg1plus = G_SayConcatArgs( 1 );
   arg2plus = G_SayConcatArgs( 2 );
 
-  if( !g_allowVote.integer )
+  if( !g_allowVote.integer &&
+      !G_admin_permission( ent, ADMF_ALWAYS_VOTE ))
   {
     trap_SendServerCommand( ent-g_entities, "print \"Voting not allowed here\n\"" );
     return;
