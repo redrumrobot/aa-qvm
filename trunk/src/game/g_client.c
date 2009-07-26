@@ -854,12 +854,7 @@ static void ClientCleanName( const char *in, char *out, int outSize )
         break;
       }
 
-      // don't allow black in a name, period
-      if( ColorIndex( *in ) == 0 )
-        *out++ = COLOR_WHITE;
-      else
-        *out++ = *in;
-
+      *out++ = *in;
       in++;
       continue;
     }
