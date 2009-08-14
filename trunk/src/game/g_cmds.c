@@ -910,45 +910,46 @@ void Cmd_Team_f( gentity_t *ent )
     return;
   }
 
-   if (team != PTE_NONE)
-   {
-     char  namebuff[32];
+  if (team != PTE_NONE)
+  {
+    char  namebuff[32];
  
-     Q_strncpyz (namebuff, ent->client->pers.netname, sizeof(namebuff));
-     Q_CleanStr (namebuff);
- 
-     if (!namebuff[0] || !Q_stricmp (namebuff, "UnnamedPlayer"))
-     {
-       trap_SendServerCommand( ent-g_entities, va( "print \"Please set your player name before joining a team. Press ESC and use the Options / Game menu  or use /name in the console\n\"") );
-       return;
-     }
-   }
- 
+    Q_strncpyz (namebuff, ent->client->pers.netname, sizeof(namebuff));
+    Q_CleanStr (namebuff);
+
+    if (!namebuff[0] || !Q_stricmp (namebuff, "UnnamedPlayer"))
+    {
+      trap_SendServerCommand( ent-g_entities, va( "print \"Please set your player name before joining a team. Press ESC and use the Options / Game menu  or use /name in the console\n\"") );
+      return;
+    }
+  }
 
   G_ChangeTeam( ent, team );
-   
-   
 
-   if( team == PTE_ALIENS ) {
-     if ( oldteam == PTE_HUMANS )
-       Com_sprintf( buf, sizeof( buf ), "%s^7 abandoned humans and joined the aliens.", ent->client->pers.netname );
-     else
-       Com_sprintf( buf, sizeof( buf ), "%s^7 joined the aliens.", ent->client->pers.netname );
-   }
-   else if( team == PTE_HUMANS ) {
-     if ( oldteam == PTE_ALIENS )
-       Com_sprintf( buf, sizeof( buf ), "%s^7 abandoned the aliens and joined the humans.", ent->client->pers.netname );
-     else
-       Com_sprintf( buf, sizeof( buf ), "%s^7 joined the humans.", ent->client->pers.netname );
-   }
-   else if( team == PTE_NONE ) {
-     if ( oldteam == PTE_HUMANS )
-       Com_sprintf( buf, sizeof( buf ), "%s^7 left the humans.", ent->client->pers.netname );
-     else
-       Com_sprintf( buf, sizeof( buf ), "%s^7 left the aliens.", ent->client->pers.netname );
-   }
-   trap_SendServerCommand( -1, va( "print \"%s\n\"", buf ) );
-   G_LogOnlyPrintf("ClientTeam: %s\n",buf);
+  if( ent->client->sess.restartTeam == PTE_NONE )
+  {
+    if( team == PTE_ALIENS ) {
+      if ( oldteam == PTE_HUMANS )
+        Com_sprintf( buf, sizeof( buf ), "%s^7 abandoned humans and joined the aliens.", ent->client->pers.netname );
+      else
+        Com_sprintf( buf, sizeof( buf ), "%s^7 joined the aliens.", ent->client->pers.netname );
+      }
+      else if( team == PTE_HUMANS ) {
+        if ( oldteam == PTE_ALIENS )
+          Com_sprintf( buf, sizeof( buf ), "%s^7 abandoned the aliens and joined the humans.", ent->client->pers.netname );
+        else
+          Com_sprintf( buf, sizeof( buf ), "%s^7 joined the humans.", ent->client->pers.netname );
+      }
+      else if( team == PTE_NONE ) {
+        if ( oldteam == PTE_HUMANS )
+          Com_sprintf( buf, sizeof( buf ), "%s^7 left the humans.", ent->client->pers.netname );
+        else
+          Com_sprintf( buf, sizeof( buf ), "%s^7 left the aliens.", ent->client->pers.netname );
+      }
+      trap_SendServerCommand( -1, va( "print \"%s\n\"", buf ) );
+  }
+
+  G_LogOnlyPrintf("ClientTeam: %s\n",buf);
 }
 
 
