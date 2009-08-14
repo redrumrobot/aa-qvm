@@ -4068,7 +4068,7 @@ qboolean G_admin_help( gentity_t *ent, int skiparg )
         ADMBP( va( "^3!help: ^7help for '!%s':\n", g_admin_cmds[ i ].keyword ) );
         ADMBP( va( " ^3Function: ^7%s\n", g_admin_cmds[ i ].function ) );
         ADMBP( va( " ^3Syntax:   ^7!%s %s\n", g_admin_cmds[ i ].keyword, g_admin_cmds[ i ].syntax ) );
-        ADMBP( va( " ^3Flag:     ^7'%c'\n", g_admin_cmds[ i ].flag[ 0 ] ) );
+        ADMBP( va( " ^3Flag:     ^7'%c'\n", g_admin_cmds[ i ].flag ) );
         ADMBP_end();
         return qtrue;
       }
