@@ -406,7 +406,7 @@ void SpectatorThink( gentity_t *ent, usercmd_t *ucmd )
     if ( client->sess.spectatorClient >= 0 )
     {
       cl = &level.clients[ client->sess.spectatorClient ];
-      if ( cl->sess.sessionTeam != TEAM_SPECTATOR )
+      if ( cl->sess.sessionTeam != TEAM_SPECTATOR || cl->pers.demoClient )
         doPmove = qfalse;
     }
   }
@@ -1892,7 +1892,7 @@ void SpectatorClientEndFrame( gentity_t *ent )
     {
       cl = &level.clients[ clientNum ];
 
-      if( cl->pers.connected == CON_CONNECTED )
+      if( cl->pers.connected == CON_CONNECTED || cl->pers.demoClient )
       {
  
     if( cl -> sess.spectatorState != SPECTATOR_FOLLOW ) 
