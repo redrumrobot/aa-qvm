@@ -1012,6 +1012,7 @@ void ClientUserinfoChanged( int clientNum, qboolean forceName )
   char      c1[ MAX_INFO_STRING ];
   char      c2[ MAX_INFO_STRING ];
   char      userinfo[ MAX_INFO_STRING ];
+  char      buf[ MAX_INFO_STRING ];
   team_t    team;
 
   ent = g_entities + clientNum;
@@ -1115,6 +1116,9 @@ void ClientUserinfoChanged( int clientNum, qboolean forceName )
       {
         client->pers.nameChangeTime = level.time;
         client->pers.nameChanges++;
+        // log renames to demo
+        Info_SetValueForKey( buf, "name", client->pers.netname );
+        G_DemoCommand( DC_CLIENT_SET, va( "%d %s", clientNum, buf ) );
       }
     }
   }
@@ -1422,7 +1426,6 @@ char *ClientConnect( int clientNum, qboolean firstTime )
   // count current clients and rank for scoreboard
   CalculateRanks( );
   G_admin_namelog_update( client, qfalse );
-  
 
   // if this is after !restart keepteams or !restart switchteams, apply said selection
   if ( client->sess.restartTeam != PTE_NONE ) {
@@ -1448,6 +1451,7 @@ void ClientBegin( int clientNum )
   gentity_t *ent;
   gclient_t *client;
   int       flags;
+  char      buffer[ MAX_INFO_STRING ] = "";
 
   ent = g_entities + clientNum;
 
@@ -1489,6 +1493,12 @@ void ClientBegin( int clientNum )
   trap_SendServerCommand( ent - g_entities, "ptrcrequest" );
 
   G_LogPrintf( "ClientBegin: %i\n", clientNum );
+
+  // log to demo
+  Info_SetValueForKey( buffer, "name", client->pers.netname );
+  Info_SetValueForKey( buffer, "ip", client->pers.ip );
+  Info_SetValueForKey( buffer, "team", va( "%d", client->pers.teamSelection ) );
+  G_DemoCommand( DC_CLIENT_SET, va( "%d %s", clientNum, buffer ) );
 
   if( g_clientUpgradeNotice.integer )
   {
@@ -1895,6 +1905,8 @@ void ClientDisconnect( int clientNum )
   ent->client->sess.sessionTeam = TEAM_FREE;
 
   trap_SetConfigstring( CS_PLAYERS + clientNum, "");
+
+  G_DemoCommand( DC_CLIENT_REMOVE, va( "%d", clientNum ) );
 
   CalculateRanks( );
 }
