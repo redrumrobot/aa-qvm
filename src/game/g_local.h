@@ -1312,6 +1312,7 @@ extern  vmCvar_t  g_suddenDeathVoteDelay;
 extern  vmCvar_t  g_mapVotesPercent;
 extern  vmCvar_t  g_mapRotationVote;
 extern  vmCvar_t  g_designateVotes;
+extern  vmCvar_t  g_defeatVotes;
 extern  vmCvar_t  g_extendVotesPercent;
 extern  vmCvar_t  g_extendVotesTime;
 extern  vmCvar_t  g_extendVotesCount;
