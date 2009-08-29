@@ -1042,15 +1042,15 @@ void G_Say( gentity_t *ent, gentity_t *target, int mode, const char *chatText )
     {
       default:
       case PTE_NONE:
-        prefix = "^7[^3S^7] ";
+        prefix = "^3[S]^7 ";
         break;
 
       case PTE_ALIENS:
-        prefix = "^7[^1A^7] ";
+        prefix = "^1[A]^7 ";
         break;
 
       case PTE_HUMANS:
-        prefix = "^7[^4H^7] ";
+        prefix = "^4[H]^7 ";
     }
   }
   else
