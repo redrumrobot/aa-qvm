@@ -1205,15 +1205,15 @@ static void Cmd_SayArea_f( gentity_t *ent )
     {
       default:
       case PTE_NONE:
-        prefix = "[S] ";
+        prefix = "^3[S]^7 ";
         break;
 
       case PTE_ALIENS:
-        prefix = "[A] ";
+        prefix = "^1[A]^7 ";
         break;
 
       case PTE_HUMANS:
-        prefix = "[H] ";
+        prefix = "^4[H]^7 ";
     }
   }
   else
