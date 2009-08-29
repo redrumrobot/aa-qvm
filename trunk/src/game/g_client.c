@@ -1012,7 +1012,6 @@ void ClientUserinfoChanged( int clientNum, qboolean forceName )
   char      c1[ MAX_INFO_STRING ];
   char      c2[ MAX_INFO_STRING ];
   char      userinfo[ MAX_INFO_STRING ];
-  char      buf[ MAX_INFO_STRING ];
   team_t    team;
 
   ent = g_entities + clientNum;
@@ -1116,9 +1115,6 @@ void ClientUserinfoChanged( int clientNum, qboolean forceName )
       {
         client->pers.nameChangeTime = level.time;
         client->pers.nameChanges++;
-        // log renames to demo
-        Info_SetValueForKey( buf, "name", client->pers.netname );
-        G_DemoCommand( DC_CLIENT_SET, va( "%d %s", clientNum, buf ) );
       }
     }
   }
@@ -1260,6 +1256,9 @@ void ClientUserinfoChanged( int clientNum, qboolean forceName )
     teamLeader, BG_ClientListString( &client->sess.ignoreList ) );
 
   trap_SetConfigstring( CS_PLAYERS + clientNum, userinfo );
+
+  // log to demo
+  G_DemoCommand( DC_CLIENT_SET, va( "%d %s", clientNum, userinfo ) );
 
   /*G_LogPrintf( "ClientUserinfoChanged: %i %s\n", clientNum, userinfo );*/
 }
@@ -1426,6 +1425,7 @@ char *ClientConnect( int clientNum, qboolean firstTime )
   // count current clients and rank for scoreboard
   CalculateRanks( );
   G_admin_namelog_update( client, qfalse );
+  
 
   // if this is after !restart keepteams or !restart switchteams, apply said selection
   if ( client->sess.restartTeam != PTE_NONE ) {
@@ -1450,8 +1450,8 @@ void ClientBegin( int clientNum )
 {
   gentity_t *ent;
   gclient_t *client;
+  char      userinfo[ MAX_INFO_STRING ];
   int       flags;
-  char      buffer[ MAX_INFO_STRING ] = "";
 
   ent = g_entities + clientNum;
 
@@ -1495,10 +1495,8 @@ void ClientBegin( int clientNum )
   G_LogPrintf( "ClientBegin: %i\n", clientNum );
 
   // log to demo
-  Info_SetValueForKey( buffer, "name", client->pers.netname );
-  Info_SetValueForKey( buffer, "ip", client->pers.ip );
-  Info_SetValueForKey( buffer, "team", va( "%d", client->pers.teamSelection ) );
-  G_DemoCommand( DC_CLIENT_SET, va( "%d %s", clientNum, buffer ) );
+  trap_GetConfigstring( CS_PLAYERS + clientNum, userinfo, sizeof(userinfo) );
+  G_DemoCommand( DC_CLIENT_SET, va( "%d %s", clientNum, userinfo ) );
 
   if( g_clientUpgradeNotice.integer )
   {
