@@ -1794,7 +1794,8 @@ void Cmd_CallVote_f( gentity_t *ent )
           sizeof( level.voteDisplayString ), "[Poll] \'%s^7\'", arg2plus );
    }
    else if( !Q_stricmp( arg1, "sudden_death" ) ||
-     !Q_stricmp( arg1, "suddendeath" ) )
+            !Q_stricmp( arg1, "suddendeath" ) ||
+            !Q_stricmp( arg1, "sd" ) )
    {
      if(!g_suddenDeathVotePercent.integer)
      {
@@ -2251,7 +2252,6 @@ void Cmd_CallTeamVote_f( gentity_t *ent )
   }
   else if( !Q_stricmp( arg1, "undesignate" ) )
   {
-
     if( !g_designateVotes.integer )
     {
       trap_SendServerCommand( ent-g_entities,
@@ -2273,6 +2273,13 @@ void Cmd_CallTeamVote_f( gentity_t *ent )
   }
   else if( !Q_stricmp( arg1, "admitdefeat" ) )
   {
+    if( !g_defeatVotes.integer )
+    {
+      trap_SendServerCommand( ent-g_entities,
+        "print \"callteamvote: Admit defeat votes have been disabled.\n\"" );
+      return;
+    }
+
     if( numVoters <=1 )
     {
       trap_SendServerCommand( ent-g_entities,
@@ -2286,17 +2293,17 @@ void Cmd_CallTeamVote_f( gentity_t *ent )
         sizeof( level.teamVoteDisplayString[ cs_offset ] ),
         "Admit Defeat" );
   }
-   else if( !Q_stricmp( arg1, "poll" ) )
-   {
-     if( arg2plus[ 0 ] == '\0' )
-     {
-       trap_SendServerCommand( ent-g_entities, "print \"callteamvote: You forgot to specify what people should vote on.\n\"" );
-       return;
-     }
-     Com_sprintf( level.teamVoteString[ cs_offset ], sizeof( level.teamVoteString[ cs_offset ] ), nullstring );
-     Com_sprintf( level.teamVoteDisplayString[ cs_offset ],
-         sizeof( level.voteDisplayString ), "[Poll] \'%s^7\'", arg2plus );
-   }
+  else if( !Q_stricmp( arg1, "poll" ) )
+  {
+    if( arg2plus[ 0 ] == '\0' )
+    {
+      trap_SendServerCommand( ent-g_entities, "print \"callteamvote: You forgot to specify what people should vote on.\n\"" );
+      return;
+    }
+    Com_sprintf( level.teamVoteString[ cs_offset ], sizeof( level.teamVoteString[ cs_offset ] ), nullstring );
+    Com_sprintf( level.teamVoteDisplayString[ cs_offset ],
+        sizeof( level.voteDisplayString ), "[Poll] \'%s^7\'", arg2plus );
+  }
   else
   {
     trap_SendServerCommand( ent-g_entities, "print \"Invalid vote string\n\"" );

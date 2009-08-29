@@ -95,6 +95,7 @@ vmCvar_t  g_suddenDeathVoteDelay;
 vmCvar_t  g_mapVotesPercent;
 vmCvar_t  g_mapRotationVote;
 vmCvar_t  g_designateVotes;
+vmCvar_t  g_defeatVotes;
 vmCvar_t  g_extendVotesPercent;
 vmCvar_t  g_extendVotesTime;
 vmCvar_t  g_extendVotesCount;
@@ -292,6 +293,7 @@ static cvarTable_t   gameCvarTable[ ] =
   { &g_mapVotesPercent, "g_mapVotesPercent", "50", CVAR_ARCHIVE, 0, qfalse },
   { &g_mapRotationVote, "g_mapRotationVote", "15", CVAR_ARCHIVE, 0, qfalse },
   { &g_designateVotes, "g_designateVotes", "0", CVAR_ARCHIVE, 0, qfalse },
+  { &g_designateVotes, "g_defeatVotes", "1", CVAR_ARCHIVE, 0, qfalse },
   { &g_extendVotesPercent, "g_extendVotesPercent", "75", CVAR_ARCHIVE, 0, qfalse },
   { &g_extendVotesTime, "g_extendVotesTime", "15", CVAR_ARCHIVE, 0, qfalse },
   { &g_extendVotesCount, "g_extendVotesCount", "1", CVAR_ARCHIVE, 0, qfalse },
