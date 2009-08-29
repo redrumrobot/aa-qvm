@@ -854,6 +854,8 @@ G_ShutdownGame
 */
 void G_ShutdownGame( int restart )
 {
+  int i, clients;
+
   // in case of a map_restart
   G_ClearVotes( );
 
@@ -879,6 +881,11 @@ void G_ShutdownGame( int restart )
   level.restarted = qfalse;
   level.surrenderTeam = PTE_NONE;
   trap_SetConfigstring( CS_WINNER, "" );
+
+  // clear all demo clients
+  clients = trap_Cvar_VariableIntegerValue( "sv_democlients" );
+  for( i = 0; i < clients; i++ )
+    trap_SetConfigstring( CS_PLAYERS + i, NULL );
 }
 
 
@@ -1704,24 +1711,24 @@ Mark a client as a demo client and load info into it
 void G_DemoSetClient( void )
 {
   char buffer[ MAX_INFO_STRING ];
+  int clientNum;
   gclient_t *client;
   char *s;
 
   trap_Argv( 0, buffer, sizeof( buffer ) );
-  client = level.clients + atoi( buffer );
+  clientNum = atoi( buffer );
+  client = level.clients + clientNum;
   client->pers.demoClient = qtrue;
 
   trap_Argv( 1, buffer, sizeof( buffer ) );
-  s = Info_ValueForKey( buffer, "name" );
+  s = Info_ValueForKey( buffer, "n" );
   if( *s )
     Q_strncpyz( client->pers.netname, s, sizeof( client->pers.netname ) );
-  s = Info_ValueForKey( buffer, "ip" );
-  if( *s )
-    Q_strncpyz( client->pers.ip, s, sizeof( client->pers.ip ) );
-  s = Info_ValueForKey( buffer, "team" );
+  s = Info_ValueForKey( buffer, "t" );
   if( *s )
     client->pers.teamSelection = atoi( s );
   client->sess.spectatorState = SPECTATOR_NOT;
+  trap_SetConfigstring( CS_PLAYERS + clientNum, buffer );
 }
 
 /*
@@ -1734,11 +1741,12 @@ Unmark a client as a demo client
 void G_DemoRemoveClient( void )
 {
   char buffer[ 3 ];
-  gclient_t *client;
+  int clientNum;
 
   trap_Argv( 0, buffer, sizeof( buffer ) );
-  client = level.clients + atoi( buffer );
-  client->pers.demoClient = qfalse;
+  clientNum = atoi( buffer );
+  level.clients[clientNum].pers.demoClient = qfalse;
+  trap_SetConfigstring( CS_PLAYERS + clientNum, NULL );
 }
 
 /*
@@ -1997,7 +2005,6 @@ void ExitLevel( void )
     if( level.clients[ i ].pers.connected == CON_CONNECTED )
       level.clients[ i ].pers.connected = CON_CONNECTING;
   }
-
 }
 /*
 =================
@@ -2784,42 +2791,42 @@ void CheckDemo( void )
   int i;
 
   // Don't do anything if no change
-  if ( g_demoState.integer == level.demoState )
+  if( g_demoState.integer == level.demoState )
     return;
+  level.demoState = g_demoState.integer;
 
   // log all connected clients
-  if ( g_demoState.integer == DS_RECORDING )
+  if( g_demoState.integer == DS_RECORDING )
   {
-    char buffer[ MAX_INFO_STRING ] = "";
-    for ( i = 0; i < level.maxclients; i++ )
+    for( i = 0; i < level.maxclients; i++ )
     {
-      if ( level.clients[ i ].pers.connected == CON_CONNECTED )
+      if( level.clients[ i ].pers.connected != CON_DISCONNECTED )
       {
-        Info_SetValueForKey( buffer, "name", level.clients[ i ].pers.netname );
-        Info_SetValueForKey( buffer, "ip", level.clients[ i ].pers.ip );
-        Info_SetValueForKey( buffer, "team", va( "%d", level.clients[ i ].pers.teamSelection ) );
-        G_DemoCommand( DC_CLIENT_SET, va( "%d %s", i, buffer ) );
+        char userinfo[ MAX_INFO_STRING ];
+        trap_GetConfigstring( CS_PLAYERS + i, userinfo, sizeof(userinfo) );
+        G_DemoCommand( DC_CLIENT_SET, va( "%d %s", i, userinfo ) );
       }
     }
   }
 
-  // empty teams and display a message, also cancel all teamvotes
-  else if ( g_demoState.integer == DS_PLAYBACK )
+  // empty teams and display a message
+  else if( g_demoState.integer == DS_PLAYBACK )
   {
     trap_SendServerCommand( -1, "print \"A demo has been started on the server.\n\"" );
-    level.teamVoteNo[ 0 ] = level.numConnectedClients;
-    level.teamVoteYes[ 0 ] = 0;
-    CheckTeamVote( PTE_HUMANS );
-    level.teamVoteNo[ 1 ] = level.numConnectedClients;
-    level.teamVoteYes[ 1 ] = 0;
-    CheckTeamVote( PTE_ALIENS );
-    for ( i = 0; i < level.maxclients; i++ )
+    for( i = 0; i < level.maxclients; i++ )
     {
-      if ( level.clients[ i ].pers.teamSelection != PTE_NONE )
+      if( level.clients[ i ].pers.teamSelection != PTE_NONE )
         G_ChangeTeam( g_entities + i, PTE_NONE );
     }
   }
-  level.demoState = g_demoState.integer;
+
+  // clear all demo clients
+  if( g_demoState.integer == DS_NONE || g_demoState.integer == DS_PLAYBACK )
+  {
+    int clients = trap_Cvar_VariableIntegerValue( "sv_democlients" );
+    for( i = 0; i < clients; i++ )
+      trap_SetConfigstring( CS_PLAYERS + i, NULL );
+  }
 }
 
 /*

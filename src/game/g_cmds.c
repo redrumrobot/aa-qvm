@@ -658,7 +658,6 @@ void G_ChangeTeam( gentity_t *ent, pTeam_t newTeam )
 {
   pTeam_t oldTeam = ent->client->pers.teamSelection;
   qboolean isFixingImbalance=qfalse;
-  char    buf[ MAX_INFO_STRING ];
  
   if( oldTeam == newTeam )
     return;
@@ -744,10 +743,6 @@ void G_ChangeTeam( gentity_t *ent, pTeam_t newTeam )
   //update ClientInfo
   ClientUserinfoChanged( ent->client->ps.clientNum, qfalse );
   G_CheckDBProtection( );
-
-  // log team changes to demo
-  Info_SetValueForKey( buf, "team", va( "%d", ent->client->pers.teamSelection ) );
-  G_DemoCommand( DC_CLIENT_SET, va( "%d %s", (int)(ent - g_entities), buf ) );
 }
 
 /*
