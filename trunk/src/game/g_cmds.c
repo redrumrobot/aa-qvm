@@ -5181,16 +5181,25 @@ void G_WordWrap( char *buffer, int maxwidth )
 
 void G_PrivateMessage( gentity_t *ent )
 {
+  int tmppids [ MAX_CLIENTS ];                      //Added by TNT
   int pids[ MAX_CLIENTS ];
   int ignoreids[ MAX_CLIENTS ];
   char name[ MAX_NAME_LENGTH ];
+  char allname[ 20 ];                               //Added by TNT
+  char *shtnname = &name[1];                        //Added by TNT
   char cmd[ 12 ];
   char str[ MAX_STRING_CHARS ];
   char *msg;
   char color;
+  int argCount;                                     //Added by TNT
+  int tmpskipargs = 0;                              //Added by TNT
+  int tmpcount;                                     //Added by TNT
   int pcount, matches, ignored = 0;
   int i;
+  int j;
+  int k;
   int skipargs = 0;
+  qboolean found;                                   //Added by TNT
   qboolean teamonly = qfalse;
   gentity_t *tmpent;
 
@@ -5213,18 +5222,69 @@ void G_PrivateMessage( gentity_t *ent )
     skipargs = 1;
     G_SayArgv( 1, cmd, sizeof( cmd ) );
   }
-  if( G_SayArgc( ) < 3+skipargs )
-  {
-    ADMP( va( "usage: %s [name|slot#] [message]\n", cmd ) );
-    return;
-  }
+  
 
   if( !Q_stricmp( cmd, "mt" ) || !Q_stricmp( cmd, "/mt" ) )
     teamonly = qtrue;
 
-  G_SayArgv( 1+skipargs, name, sizeof( name ) );
+  //Below added by TNT
+
+  argCount = G_SayArgc();
+  tmpskipargs = skipargs;
+
+  for( i = 1 + tmpskipargs; i < argCount + tmpskipargs; ++i )
+  {
+    G_SayArgv( i, name, sizeof( name ) );
+
+    if( i > 1 + tmpskipargs)
+    {
+      if( name[0] != '-' )
+        break;
+
+      tmpcount = G_ClientNumbersFromString( shtnname, tmppids );
+      ++skipargs;
+
+      if ( tmpcount && strlen( allname ) + strlen( allname ) + 1 <  20 )
+      {
+        strcat( allname , va( " %s" , name) );
+      }
+    }
+    else
+    {
+      pcount = G_ClientNumbersFromString( name, pids );
+      strcpy( allname, name );
+      continue;
+    }
+
+    for( j = 0; j < tmpcount; ++j )
+    {
+      found = qfalse;
+
+      for ( k = 0; k < pcount; ++k )
+      {
+        if ( tmppids[j] == pids[k] )
+        {
+          found = qtrue;
+          break;
+        } 
+      }
+
+      if ( !found )
+      {
+        pids[pcount++] = tmppids[j];
+      }
+    }
+  }
+
+  //Above added by TNT
+
+  if( G_SayArgc( ) < 3+skipargs )
+  {
+    ADMP( va( "usage: %s [name|slot#] -[another name|slot#] [message]\n", cmd ) );
+    return;
+  }
+
   msg = G_SayConcatArgs( 2+skipargs );
-  pcount = G_ClientNumbersFromString( name, pids );
 
   if( ent )
   {
@@ -5283,7 +5343,7 @@ void G_PrivateMessage( gentity_t *ent )
       "chat \"%s^%c -> ^7%s^7: (%d recipients): ^%c%s^7\" %i",
       ( ent ) ? ent->client->pers.netname : "console",
       color,
-      name,
+      allname,
       matches,
       color,
       msg,
@@ -5296,7 +5356,7 @@ void G_PrivateMessage( gentity_t *ent )
 
   if( !matches )
     ADMP( va( "^3No player matching ^7\'%s^7\' ^3to send message to.\n",
-      name ) );
+      allname ) );
   else
   {
     if( ent )
@@ -5307,7 +5367,7 @@ void G_PrivateMessage( gentity_t *ent )
     G_LogPrintf( "%s: %s^7: %s^7: %s\n",
       ( teamonly ) ? "tprivmsg" : "privmsg",
       ( ent ) ? ent->client->pers.netname : "console",
-      name, msg );
+      allname, msg );
   }
 
   if( ignored )
