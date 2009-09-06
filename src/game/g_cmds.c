@@ -4856,7 +4856,7 @@ commands_t cmds[ ] = {
 
   { "score", CMD_INTERMISSION, ScoreboardMessage },
   { "mystats", CMD_TEAM|CMD_INTERMISSION, Cmd_MyStats_f },
-  { "allstats", CMD_TEAM|CMD_INTERMISSION, Cmd_AllStats_f },
+  { "allstats", 0|CMD_INTERMISSION, Cmd_AllStats_f },
   { "teamstatus", CMD_TEAM, Cmd_TeamStatus_f },
 
   // cheats
