@@ -4733,7 +4733,7 @@ static void Cmd_Ignore_f( gentity_t *ent )
  void Cmd_Donate_f( gentity_t *ent ) {
    char s[ MAX_TOKEN_CHARS ] = "", *type = "evo(s)";
    int i, value, divisor, portion, new_credits, total=0,
-     max = ALIEN_MAX_KILLS, *amounts;
+     max = ALIEN_MAX_KILLS, *amounts, *totals;
    qboolean donated = qtrue;
  
    if( !ent->client ) return;
@@ -4750,8 +4750,7 @@ static void Cmd_Ignore_f( gentity_t *ent )
     trap_SendServerCommand( ent-g_entities, "print \"Your chat is flood-limited; wait before chatting again\n\"" );
     return;
    }
- 
- 
+
    if( ent->client->pers.teamSelection == PTE_ALIENS )
      divisor = level.numAlienClients-1;
    else if( ent->client->pers.teamSelection == PTE_HUMANS ) {
@@ -4782,8 +4781,12 @@ static void Cmd_Ignore_f( gentity_t *ent )
  
    // allocate memory for distribution amounts
    amounts = G_Alloc( level.maxclients * sizeof( int ) );
-   for( i = 0; i < level.maxclients; i++ ) amounts[ i ] = 0;
- 
+   totals = G_Alloc( level.maxclients * sizeof( int ) );
+   for( i = 0; i < level.maxclients; i++ ) {
+     amounts[ i ] = 0;
+     totals[ i ] = 0;
+   }
+
    // determine donation amounts for each client
    total = value;
    while( donated && value ) {
@@ -4797,8 +4800,10 @@ static void Cmd_Ignore_f( gentity_t *ent )
             ent->client->pers.teamSelection ) {
          new_credits = level.clients[ i ].pers.credit + portion;
          amounts[ i ] = portion;
+         totals[ i ] += portion;
          if( new_credits > max ) {
            amounts[ i ] -= new_credits - max;
+           totals[ i ] -= new_credits - max;
            new_credits = max;
          }
          if( amounts[ i ] ) {
@@ -4813,10 +4818,10 @@ static void Cmd_Ignore_f( gentity_t *ent )
    // transfer funds
    G_AddCreditToClient( ent->client, value - total, qtrue );
    for( i = 0; i < level.maxclients; i++ )
-     if( amounts[ i ] ) {
+     if( totals[ i ] ) {
        trap_SendServerCommand( i,
          va( "print \"%s^7 donated %d %s to you, don't forget to say 'thank you'!\n\"",
-         ent->client->pers.netname, amounts[ i ], type ) );
+         ent->client->pers.netname, totals[ i ], type ) );
      }
  
    G_Free( amounts );
