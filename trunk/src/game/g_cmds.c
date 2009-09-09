@@ -4443,7 +4443,8 @@ void Cmd_PTRCRestore_f( gentity_t *ent )
   if( connection && connection->ptrCode == code )
   {
     // set the correct team
-    G_ChangeTeam( ent, connection->clientTeam );
+	if( !( ent->client->pers.specExpires > level.time ) )
+        G_ChangeTeam( ent, connection->clientTeam );
 
     // set the correct credit etc.
     ent->client->ps.persistant[ PERS_CREDIT ] = 0;

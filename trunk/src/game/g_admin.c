@@ -1412,6 +1412,49 @@ void G_admin_namelog_update( gclient_t *client, qboolean disconnect )
       if( !disconnect )
         g_admin_namelog[ i ]->banned = qfalse;
 
+      //check other things like if user was denybuild or muted or denyweapon and restore them
+      if( !disconnect )
+      {
+        if( g_admin_namelog[ i ]->muted )
+        {
+          client->pers.muted = qtrue;
+          client->pers.muteExpires = g_admin_namelog[ i ]->muteExpires;
+          G_AdminsPrintf( "^7%s^7's ^3!mute^7 has been restored\n", client->pers.netname );
+          g_admin_namelog[ i ]->muted = qfalse;
+        }
+        if( g_admin_namelog[ i ]->denyBuild )
+        {
+          client->pers.denyBuild = qtrue;
+          G_AdminsPrintf( "^7%s^7's ^3!denybuild^7 has been restored\n", client->pers.netname );
+          g_admin_namelog[ i ]->denyBuild = qfalse;
+        }
+        if( g_admin_namelog[ i ]->specExpires > level.time )
+        {
+          client->pers.specExpires = g_admin_namelog[ i ]->specExpires;
+          G_AdminsPrintf( "^7%s^7's ^3!putteam spectator^7 has been restored\n", client->pers.netname );
+          g_admin_namelog[ i ]->specExpires = 0;
+        }
+      }
+      else
+      {
+        //mute
+        if( G_IsMuted( client ) )
+        {
+          g_admin_namelog[ i ]->muted = qtrue;
+          g_admin_namelog[ i ]->muteExpires = client->pers.muteExpires;
+        }
+        //denybuild
+        if( client->pers.denyBuild )
+        {
+          g_admin_namelog[ i ]->denyBuild = qtrue;
+        }
+        //putteam spec
+        if( client->pers.specExpires > level.time )
+        {
+          g_admin_namelog[ i ]->specExpires = client->pers.specExpires;
+        }
+      }
+
       return;
     }
   }

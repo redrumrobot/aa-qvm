@@ -158,6 +158,10 @@ typedef struct g_admin_namelog
   char      guid[ 33 ];
   int       slot;
   qboolean  banned;
+  qboolean  muted;
+  int       muteExpires;
+  qboolean  denyBuild;
+  int       specExpires;
 }
 g_admin_namelog_t;
 
