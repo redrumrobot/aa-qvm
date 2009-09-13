@@ -94,6 +94,8 @@ vmCvar_t  g_suddenDeathVotePercent;
 vmCvar_t  g_suddenDeathVoteDelay;
 vmCvar_t  g_mapVotesPercent;
 vmCvar_t  g_mapRotationVote;
+vmCvar_t  g_popularMaps;
+vmCvar_t  g_popularMapsVotePercent;
 vmCvar_t  g_designateVotes;
 vmCvar_t  g_defeatVotes;
 vmCvar_t  g_extendVotesPercent;
@@ -292,6 +294,8 @@ static cvarTable_t   gameCvarTable[ ] =
   { &g_suddenDeathVoteDelay, "g_suddenDeathVoteDelay", "180", CVAR_ARCHIVE, 0, qfalse },
   { &g_mapVotesPercent, "g_mapVotesPercent", "50", CVAR_ARCHIVE, 0, qfalse },
   { &g_mapRotationVote, "g_mapRotationVote", "15", CVAR_ARCHIVE, 0, qfalse },
+  { &g_popularMaps, "g_popularMaps", "arachnid2 atcs karith nexus6 niveus transit tremor", CVAR_ARCHIVE  },
+  { &g_popularMapsVotePercent, "g_popularMapsVotePercent", "0", CVAR_ARCHIVE  },
   { &g_designateVotes, "g_designateVotes", "0", CVAR_ARCHIVE, 0, qfalse },
   { &g_designateVotes, "g_defeatVotes", "1", CVAR_ARCHIVE, 0, qfalse },
   { &g_extendVotesPercent, "g_extendVotesPercent", "75", CVAR_ARCHIVE, 0, qfalse },
