@@ -1335,6 +1335,8 @@ extern  vmCvar_t  g_suddenDeathVotePercent;
 extern  vmCvar_t  g_suddenDeathVoteDelay;
 extern  vmCvar_t  g_mapVotesPercent;
 extern  vmCvar_t  g_mapRotationVote;
+extern  vmCvar_t  g_popularMaps;
+extern  vmCvar_t  g_popularMapsVotePercent;
 extern  vmCvar_t  g_designateVotes;
 extern  vmCvar_t  g_defeatVotes;
 extern  vmCvar_t  g_extendVotesPercent;
