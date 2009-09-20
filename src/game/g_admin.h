@@ -162,6 +162,7 @@ typedef struct g_admin_namelog
   int       muteExpires;
   qboolean  denyBuild;
   int       specExpires;
+  int       voteCount;
 }
 g_admin_namelog_t;
 
