@@ -1434,6 +1434,11 @@ void G_admin_namelog_update( gclient_t *client, qboolean disconnect )
           G_AdminsPrintf( "^7%s^7's ^3!putteam spectator^7 has been restored\n", client->pers.netname );
           g_admin_namelog[ i ]->specExpires = 0;
         }
+        if( g_admin_namelog[ i ]->voteCount > 0 )
+        {
+          client->pers.voteCount = g_admin_namelog[ i ]->voteCount;
+          g_admin_namelog[ i ]->voteCount = 0;
+        }
       }
       else
       {
@@ -1452,6 +1457,11 @@ void G_admin_namelog_update( gclient_t *client, qboolean disconnect )
         if( client->pers.specExpires > level.time )
         {
           g_admin_namelog[ i ]->specExpires = client->pers.specExpires;
+        }
+        //votecount
+        if( client->pers.voteCount > 0 )
+        {
+          g_admin_namelog[ i ]->voteCount = client->pers.voteCount;
         }
       }
 
