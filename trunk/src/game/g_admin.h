@@ -65,9 +65,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  * STEALTH - uses admin stealth
  * ALLFLAGS - all flags (including command flags) apply to this player
  *
- * CANVOTE - can call votes and team votes
- * CANDECON - can deconstruct and mark
  * ALWAYSVOTE - can vote even when g_allowVote is off (maximum vote restrictions still apply)
+ * CANBUILD - can build structures
+ * CANDECON - can deconstruct and mark structures
+ * CANVOTE - can call votes and team votes
  */
 
 #define ADMF_IMMUNITY            "IMMUNITY"
@@ -92,9 +93,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #define ADMF_BAN_IMMUNITY        "BANIMMUNITY"
 
 // AA-QVM
-#define ADMF_CAN_VOTE            "CANVOTE"
-#define ADMF_CAN_DECON           "CANDECON"
 #define ADMF_ALWAYS_VOTE         "ALWAYSVOTE"
+#define ADMF_CAN_BUILD           "CANBUILD"
+#define ADMF_CAN_DECON           "CANDECON"
+#define ADMF_CAN_VOTE            "CANVOTE"
 
 #define MAX_ADMIN_LISTITEMS 20
 #define MAX_ADMIN_SHOWBANS 10

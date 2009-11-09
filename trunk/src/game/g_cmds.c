@@ -3535,6 +3535,13 @@ void Cmd_Build_f( gentity_t *ent )
     return;
   }
 
+  if( !G_admin_permission( ent, ADMF_CAN_BUILD ) )
+  {
+    trap_SendServerCommand( ent-g_entities,
+      "print \"You do not have construction rights.\n\"" );
+    return;
+  }
+
   trap_Argv( 1, s, sizeof( s ) );
 
   buildable = BG_FindBuildNumForName( s );
