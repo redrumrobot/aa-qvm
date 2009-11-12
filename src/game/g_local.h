@@ -440,6 +440,14 @@ typedef struct
   qboolean            useUnlagged;
   int                 lastTeamStatus;
   statsCounters_t     statscounters;
+
+  int                 lastVotedTime;       //last time player has voted 
+  qboolean            noMoreVote;
+  qboolean            lastVotedYes;
+
+  int                 teamLastVotedTime[ 2 ];
+  qboolean            teamNoMoreVote[ 2 ];
+  qboolean            teamLastVotedYes[ 2 ];
 } clientPersistant_t;
 
 #define MAX_UNLAGGED_MARKERS 10

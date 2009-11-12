@@ -1880,7 +1880,12 @@ void Cmd_CallVote_f( gentity_t *ent )
   level.voteNo = 0;
 
   for( i = 0 ; i < level.maxclients ; i++ )
+  {
+    level.clients[i].pers.lastVotedYes = qfalse;
+    level.clients[i].pers.noMoreVote = qfalse;
+    level.clients[i].pers.lastVotedTime = 0;
     level.clients[i].ps.eFlags &= ~EF_VOTED;
+  }
 
   if( !Q_stricmp( arg1, "poll" ) )
   {
@@ -1890,6 +1895,8 @@ void Cmd_CallVote_f( gentity_t *ent )
   {
    level.voteYes = 1;
    ent->client->ps.eFlags |= EF_VOTED;
+   ent->client->pers.lastVotedYes = qtrue;
+   ent->client->pers.lastVotedTime = level.time;
   }
 
   trap_SetConfigstring( CS_VOTE_TIME, va( "%i", level.voteTime ) );
@@ -1932,38 +1939,74 @@ void Cmd_Vote_f( gentity_t *ent )
     
       if( level.teamVoteTime[ cs_offset ] )
       {
-         if( !(ent->client->ps.eFlags & EF_TEAMVOTED ) )
-        {
-          Cmd_TeamVote_f(ent); 
-          return;
-        }
+        Cmd_TeamVote_f(ent);
+        return;
       }
     }
     trap_SendServerCommand( ent-g_entities, "print \"No vote in progress\n\"" );
     return;
   }
 
-  if( ent->client->ps.eFlags & EF_VOTED )
+  if( ent->client->ps.eFlags & EF_VOTED && ent->client->pers.noMoreVote )
   {
-    trap_SendServerCommand( ent-g_entities, "print \"Vote already cast\n\"" );
+    trap_SendServerCommand( ent-g_entities, "print \"Vote may only be changed once\n\"" );
     return;
   }
 
-  trap_SendServerCommand( ent-g_entities, "print \"Vote cast\n\"" );
-
-  ent->client->ps.eFlags |= EF_VOTED;
-
-  trap_Argv( 1, msg, sizeof( msg ) );
-
-  if( msg[ 0 ] == 'y' || msg[ 1 ] == 'Y' || msg[ 1 ] == '1' )
+  if(!ent->client->pers.lastVotedTime) //no vote yet
   {
-    level.voteYes++;
+    trap_SendServerCommand( ent-g_entities, "print \"Vote cast\n\"" );
+
+    ent->client->pers.lastVotedTime = level.time;
+
+    ent->client->ps.eFlags |= EF_VOTED;
+    trap_Argv( 1, msg, sizeof( msg ) );
+
+    if( msg[ 0 ] == 'y' || msg[ 1 ] == 'Y' || msg[ 1 ] == '1' )
+    {
+      ent->client->pers.lastVotedYes = qtrue;
+      level.voteYes++;
+      trap_SetConfigstring( CS_VOTE_YES, va( "%i", level.voteYes ) );
+    }
+    else
+    { 
+      level.voteNo++;
+      trap_SetConfigstring( CS_VOTE_NO, va( "%i", level.voteNo ) );
+    } 
+  }
+#define CHANGEVOTE_ALLOWED_TIME 5000
+  else if( ent->client->pers.lastVotedTime + CHANGEVOTE_ALLOWED_TIME > level.time )
+  {
+    trap_Argv( 1, msg, sizeof( msg ) );
+
+    if( msg[ 0 ] == 'y' || msg[ 1 ] == 'Y' || msg[ 1 ] == '1' )
+    {
+      if ( ent->client->pers.lastVotedYes )
+      {
+        trap_SendServerCommand( ent-g_entities, "print \"Already voted yes\n\"" );
+        return;
+      }
+      level.voteYes++;
+      level.voteNo--;
+    }
+    else
+    {
+      if ( !ent->client->pers.lastVotedYes )
+      {
+        trap_SendServerCommand( ent-g_entities, "print \"Already voted no\n\"" );
+        return;
+      }
+      level.voteNo++;
+      level.voteYes--;
+    }
+    trap_SendServerCommand( ent-g_entities, "print \"Vote Changed\n\"" );
     trap_SetConfigstring( CS_VOTE_YES, va( "%i", level.voteYes ) );
+    trap_SetConfigstring( CS_VOTE_NO, va( "%i", level.voteNo ) );
+    ent->client->pers.noMoreVote = qtrue;
   }
   else
   {
-    level.voteNo++;
-    trap_SetConfigstring( CS_VOTE_NO, va( "%i", level.voteNo ) );
+    trap_SendServerCommand( ent-g_entities, "print \"Vote must be changed within five seconds\n\"" );
   }
 
   // a majority will be determined in G_CheckVote, which will also account
@@ -2344,6 +2387,11 @@ void Cmd_CallTeamVote_f( gentity_t *ent )
 
   for( i = 0 ; i < level.maxclients ; i++ )
   {
+    //clear cs_offset teamvote data of all players even if on other team to prevent change team stuffups
+    level.clients[ i ].pers.teamLastVotedYes[ cs_offset ] = qfalse;
+    level.clients[ i ].pers.teamNoMoreVote[ cs_offset ] = qfalse;
+    level.clients[ i ].pers.teamLastVotedTime[ cs_offset ] = 0;
+
     if( level.clients[ i ].ps.stats[ STAT_PTEAM ] == team )
       level.clients[ i ].ps.eFlags &= ~EF_TEAMVOTED;
   }
@@ -2356,6 +2404,9 @@ void Cmd_CallTeamVote_f( gentity_t *ent )
   {
    level.teamVoteYes[ cs_offset ] = 1;
    ent->client->ps.eFlags |= EF_TEAMVOTED;
+   ent->client->pers.teamLastVotedYes[ cs_offset] = qtrue;
+   ent->client->pers.teamLastVotedTime[ cs_offset] = level.time;
+   
   }
 
   trap_SetConfigstring( CS_TEAMVOTE_TIME + cs_offset, va( "%i", level.teamVoteTime[ cs_offset ] ) );
@@ -2384,28 +2435,69 @@ void Cmd_TeamVote_f( gentity_t *ent )
     return;
   }
 
-  if( ent->client->ps.eFlags & EF_TEAMVOTED )
+  if( ent->client->ps.eFlags & EF_TEAMVOTED && ent->client->pers.teamNoMoreVote[ cs_offset ] )
   {
-    trap_SendServerCommand( ent-g_entities, "print \"Team vote already cast\n\"" );
+    trap_SendServerCommand( ent-g_entities, "print \"Vote may only be changed once\n\"" );
     return;
   }
-
-  trap_SendServerCommand( ent-g_entities, "print \"Team vote cast\n\"" );
-
-  ent->client->ps.eFlags |= EF_TEAMVOTED;
-
-  trap_Argv( 1, msg, sizeof( msg ) );
-
-  if( msg[ 0 ] == 'y' || msg[ 1 ] == 'Y' || msg[ 1 ] == '1' )
+  
+  if( !ent->client->pers.teamLastVotedTime[ cs_offset] ) //hasn't voted yet
   {
-    level.teamVoteYes[ cs_offset ]++;
+    trap_SendServerCommand( ent-g_entities, "print \"Team vote cast\n\"" );
+  
+    ent->client->pers.teamLastVotedTime[ cs_offset] = level.time;
+  
+    ent->client->ps.eFlags |= EF_TEAMVOTED;
+    trap_Argv( 1, msg, sizeof( msg ) );
+    
+    if( msg[ 0 ] == 'y' || msg[ 1 ] == 'Y' || msg[ 1 ] == '1' )
+    {
+      ent->client->pers.teamLastVotedYes[ cs_offset] = qtrue;
+      level.teamVoteYes[ cs_offset ]++;
+      trap_SetConfigstring( CS_TEAMVOTE_YES + cs_offset, va( "%i", level.teamVoteYes[ cs_offset ] ) );      
+    }
+    else
+    {
+      level.teamVoteNo[ cs_offset ]++;
+      trap_SetConfigstring( CS_TEAMVOTE_NO + cs_offset, va( "%i", level.teamVoteNo[ cs_offset ] ) );
+    }
+  }
+  else if( ent->client->pers.teamLastVotedTime[ cs_offset ] + CHANGEVOTE_ALLOWED_TIME > level.time )  //change vote
+  {
+    trap_Argv( 1, msg, sizeof( msg ) );
+
+    if( msg[ 0 ] == 'y' || msg[ 1 ] == 'Y' || msg[ 1 ] == '1' )
+    {
+      if ( ent->client->pers.teamLastVotedYes[ cs_offset ] )
+      {
+	trap_SendServerCommand( ent-g_entities, "print \"Already voted yes\n\"" );
+	return;
+      }
+      level.teamVoteYes[ cs_offset ]++;
+      level.teamVoteNo[ cs_offset ]--;
+    }
+    else
+    {
+      if ( !ent->client->pers.teamLastVotedYes[ cs_offset ] )
+      {
+        trap_SendServerCommand( ent-g_entities, "print \"Already voted no\n\"" );
+        return;
+      }
+      level.teamVoteNo[ cs_offset ]++;
+      level.teamVoteYes[ cs_offset ]--;
+    }
+    trap_SendServerCommand( ent-g_entities, "print \"Vote Changed\n\"" );
+    
     trap_SetConfigstring( CS_TEAMVOTE_YES + cs_offset, va( "%i", level.teamVoteYes[ cs_offset ] ) );
-  }
-  else
-  {
-    level.teamVoteNo[ cs_offset ]++;
     trap_SetConfigstring( CS_TEAMVOTE_NO + cs_offset, va( "%i", level.teamVoteNo[ cs_offset ] ) );
+
+    ent->client->pers.teamNoMoreVote[ cs_offset ] = qtrue;
   }
+  else // too much time has elapsed since voting to change it
+  {   
+    trap_SendServerCommand( ent-g_entities, "print \"Vote must be changed within five seconds\n\"" ); 
+  }
+
 
   // a majority will be determined in TeamCheckVote, which will also account
   // for players entering or leaving
