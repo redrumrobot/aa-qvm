@@ -205,6 +205,8 @@ vmCvar_t  g_autoGhost;
 vmCvar_t  g_teamStatus;
 vmCvar_t  g_teamStatusTime;
 
+vmCvar_t  g_changeVote;
+
 static cvarTable_t   gameCvarTable[ ] =
 {
   // don't override the cheat state set by the system
@@ -393,6 +395,8 @@ static cvarTable_t   gameCvarTable[ ] =
   { &g_rankings, "g_rankings", "0", 0, 0, qfalse },
   { &g_allowShare, "g_allowShare", "0", CVAR_ARCHIVE | CVAR_SERVERINFO, 0, qfalse},
   { &g_banNotice, "g_banNotice", "", CVAR_ARCHIVE, 0, qfalse  },
+
+  { &g_changeVote, "g_changeVote", "0", CVAR_ARCHIVE, 0, qfalse  }
 };
 
 static int gameCvarTableSize = sizeof( gameCvarTable ) / sizeof( gameCvarTable[ 0 ] );

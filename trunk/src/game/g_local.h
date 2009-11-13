@@ -1448,6 +1448,8 @@ extern  vmCvar_t  g_autoGhost;
 extern  vmCvar_t  g_teamStatus;
 extern  vmCvar_t  g_teamStatusTime;
 
+extern  vmCvar_t  g_changeVote;//if 0, changevote is disabled - if >0, sets period player can change vote after initial vote
+
 void      trap_Printf( const char *fmt );
 void      trap_Error( const char *fmt );
 int       trap_Milliseconds( void );
