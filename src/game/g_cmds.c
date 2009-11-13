@@ -1947,6 +1947,12 @@ void Cmd_Vote_f( gentity_t *ent )
     return;
   }
 
+  if( ent->client->pers.lastVotedTime && !g_changeVote.integer)
+  {
+    trap_SendServerCommand( ent-g_entities, "print \"Vote already cast \n\"" );
+    return;
+  }
+
   if( ent->client->ps.eFlags & EF_VOTED && ent->client->pers.noMoreVote )
   {
     trap_SendServerCommand( ent-g_entities, "print \"Vote may only be changed once\n\"" );
@@ -1974,8 +1980,7 @@ void Cmd_Vote_f( gentity_t *ent )
       trap_SetConfigstring( CS_VOTE_NO, va( "%i", level.voteNo ) );
     } 
   }
-#define CHANGEVOTE_ALLOWED_TIME 5000
-  else if( ent->client->pers.lastVotedTime + CHANGEVOTE_ALLOWED_TIME > level.time )
+  else if( ent->client->pers.lastVotedTime + g_changeVote.integer * 1000  > level.time )
   {
     trap_Argv( 1, msg, sizeof( msg ) );
 
@@ -2006,7 +2011,7 @@ void Cmd_Vote_f( gentity_t *ent )
   }
   else
   {
-    trap_SendServerCommand( ent-g_entities, "print \"Vote must be changed within five seconds\n\"" );
+    trap_SendServerCommand( ent-g_entities, va( "print \"Vote must be changed within %i second%s\n\"", g_changeVote.integer, ( g_changeVote.integer == 1 ) ? "" : "s" ) );
   }
 
   // a majority will be determined in G_CheckVote, which will also account
@@ -2435,6 +2440,12 @@ void Cmd_TeamVote_f( gentity_t *ent )
     return;
   }
 
+  if( ent->client->pers.lastVotedTime && !g_changeVote.integer )
+  {
+    trap_SendServerCommand( ent-g_entities, "print \"Vote already cast\n\"" );
+    return;
+  }
+
   if( ent->client->ps.eFlags & EF_TEAMVOTED && ent->client->pers.teamNoMoreVote[ cs_offset ] )
   {
     trap_SendServerCommand( ent-g_entities, "print \"Vote may only be changed once\n\"" );
@@ -2462,7 +2473,7 @@ void Cmd_TeamVote_f( gentity_t *ent )
       trap_SetConfigstring( CS_TEAMVOTE_NO + cs_offset, va( "%i", level.teamVoteNo[ cs_offset ] ) );
     }
   }
-  else if( ent->client->pers.teamLastVotedTime[ cs_offset ] + CHANGEVOTE_ALLOWED_TIME > level.time )  //change vote
+  else if( ent->client->pers.teamLastVotedTime[ cs_offset ] + g_changeVote.integer * 1000 > level.time )  //change vote
   {
     trap_Argv( 1, msg, sizeof( msg ) );
 
@@ -2495,7 +2506,7 @@ void Cmd_TeamVote_f( gentity_t *ent )
   }
   else // too much time has elapsed since voting to change it
   {   
-    trap_SendServerCommand( ent-g_entities, "print \"Vote must be changed within five seconds\n\"" ); 
+    trap_SendServerCommand( ent-g_entities, va( "print \"Vote must be changed within %i second%s\n\"", g_changeVote.integer, ( g_changeVote.integer == 1 ) ? "" : "s" ) ); 
   }
 
 
